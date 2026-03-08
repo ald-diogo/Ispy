@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universidade Moderna | Inovação e Ensino</title>
+  <!-- Bootstrap 5.3 + Ícones + Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Leaflet (mapa interativo) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    /* ----- Variáveis e reset suave ----- */
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.15);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --hero-overlay: linear-gradient(135deg, rgba(0, 51, 102, 0.8) 0%, rgba(0, 153, 204, 0.7) 100%);
+      --card-hover: translateY(-10px) scale(1.02);
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body {
+      transition: background-color 0.3s, color 0.2s;
+    }
+    /* --- Efeito glass no header --- */
+    .navbar-modern {
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      background-color: var(--glass-bg) !important;
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    /* --- Hero com imagem de fundo real e overlay --- */
+    .hero-section {
+      background: url('images/ISPCAN-BG.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: white;
+      padding: 150px 0 120px;
+      margin-top: -1px;
+    }
+    /* --- Cards flat com animação --- */
+    .course-card {
+      border: none;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 15px 30px -12px rgba(0,0,0,0.2);
+      transition: var(--transition-smooth);
+      overflow: hidden;
+    }
+    [data-bs-theme="dark"] .course-card {
+      background: rgba(30, 30, 40, 0.8);
+      box-shadow: 0 15px 30px -12px rgba(0,150,255,0.15);
+    }
+    .course-card:hover {
+      transform: var(--card-hover);
+      box-shadow: 0 25px 40px -15px rgba(0,120,200,0.4);
+    }
+    .course-card i {
+      color: #0d6efd;
+      transition: transform 0.2s;
+    }
+    .course-card:hover i {
+      transform: scale(1.1);
+    }
+    /* --- Botões filtro ativos --- */
+    .filter-btn.active {
+      background-color: #0d6efd;
+      color: white;
+      border-color: #0d6efd;
+    }
+    /* --- Notícias carrossel --- */
+    .carousel-item img {
+      filter: brightness(0.85);
+      transition: filter 0.4s;
+    }
+    .carousel-item:hover img {
+      filter: brightness(1);
+    }
+    .news-caption {
+      background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+      border-radius: 0 0 20px 20px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 30px 20px 20px;
+    }
+    /* --- Chatbot flutuante --- */
+    .chatbot-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      background: #0d6efd;
+      border: none;
+      box-shadow: 0 10px 25px rgba(0,100,255,0.4);
+      font-size: 28px;
+      color: white;
+      cursor: pointer;
+      z-index: 1050;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chatbot-btn:hover {
+      transform: scale(1.1);
+      background: #0b5ed7;
+    }
+    .chatbot-btn img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+    }
+    .chat-window {
+      position: fixed;
+      bottom: 110px;
+      right: 30px;
+      width: 320px;
+      max-width: calc(100% - 60px);
+      background: white;
+      border-radius: 25px 25px 15px 15px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      z-index: 1050;
+      display: none;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    [data-bs-theme="dark"] .chat-window {
+      background: #2d2d3a;
+      color: #eee;
+      border-color: #444;
+    }
+    .chat-header {
+      background: #0d6efd;
+      color: white;
+      padding: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chat-body {
+      padding: 15px;
+      max-height: 250px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bot-msg, .user-msg {
+      padding: 10px 14px;
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .bot-msg {
+      background: #f0f2f5;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+    [data-bs-theme="dark"] .bot-msg {
+      background: #3a3a4a;
+      color: #fff;
+    }
+    .user-msg {
+      background: #0d6efd;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+    .chat-input-area {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
+    }
+    [data-bs-theme="dark"] .chat-input-area {
+      background: #222230;
+      border-color: #444;
+    }
+    .chat-input-area input {
+      flex: 1;
+      border-radius: 30px;
+      border: 1px solid #ccc;
+      padding: 8px 15px;
+      outline: none;
+    }
+    .chat-input-area button {
+      background: transparent;
+      border: none;
+      color: #0d6efd;
+      font-size: 22px;
+      margin-left: 8px;
+    }
+    /* --- Card de localização no rodapé --- */
+    .location-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    /* --- Newsletter --- */
+    .newsletter-section {
+      background-color: #0d6efd;
+      color: white;
+      padding: 60px 0;
+    }
+    [data-bs-theme="dark"] .newsletter-section {
+      background-color: #1a2b3c;
+    }
+    .newsletter-form .input-group {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    /* Ajustes responsivos */
+    @media (max-width: 768px) {
+      .hero-section { padding: 100px 0; background-attachment: scroll; }
+    }
+    /* Ajustes logo */
+    .logo{
+      width: 50px;
+      height: 50px;
+      border-radius: 50px;
+    }
+
+    /* ===== INTERRUPTOR MODERNO DE TEMA (TOGGLE SWITCH) ===== */
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+      margin-left: 10px;
+    }
+    .theme-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 24px;
+      width: 24px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+      z-index: 2;
+    }
+    input:checked + .slider {
+      background-color: #0d6efd;
+    }
+    input:checked + .slider:before {
+      transform: translateX(30px);
+    }
+    .slider i {
+      color: #f39c12;
+      font-size: 16px;
+      z-index: 1;
+      transition: 0.4s;
+    }
+    input:checked + .slider i:first-child {
+      opacity: 0.3;
+      color: #fff;
+    }
+    input:checked + .slider i:last-child {
+      opacity: 1;
+      color: #f1c40f;
+    }
+    .slider i:first-child {
+      margin-right: auto;
+    }
+    .slider i:last-child {
+      margin-left: auto;
+      opacity: 0.3;
+    }
+    input:checked + .slider i:last-child {
+      opacity: 1;
+    }
+    input:checked + .slider i:first-child {
+      opacity: 0.3;
+    }
+    /* Ajuste para o tema escuro (icones) */
+    [data-bs-theme="dark"] .slider i:first-child {
+      color: #f39c12;
+    }
+    [data-bs-theme="dark"] .slider i:last-child {
+      color: #f1c40f;
+    }
+
+    /* ===== BOTÃO VOLTAR AO TOPO (CORRIGIDO: MAIS ESPAÇO ACIMA DO CHATBOT) ===== */
+    .back-to-top {
+      position: fixed;
+      bottom: 120px; /* Aumentado para evitar sobreposição: 30px (chat) + 65px (altura) + 25px espaçamento */
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #0d6efd;
+      color: white;
+      border: none;
+      box-shadow: 0 5px 15px rgba(0,100,255,0.3);
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1040;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.8);
+    }
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+    .back-to-top:hover {
+      background: #0b5ed7;
+      transform: scale(1.1);
+    }
+    [data-bs-theme="dark"] .back-to-top {
+      background: #2c3e50;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+    [data-bs-theme="dark"] .back-to-top:hover {
+      background: #1e2b37;
+    }
+  </style>
+</head>
+<body data-bs-theme="light">
+  <!-- CABEÇALHO MODERNO com glassmorphism -->
+  <nav class="navbar navbar-expand-lg navbar-modern sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3" href="#">
+        <img class="logo" src="images/ISPCAN-rbg.png" />ISPCAN-Malanje
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link active" href="#"><i class="fas fa-home"></i>Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="sobre.html"><i class="fas fa-info-circle"></i>Sobre</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="fas fa-book"></i>Cursos</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="engenharia.html">Engenharias</a></li>
+              <li><a class="dropdown-item" href="ciencias.html">Ciências Sociais</a></li>
+              <li><a class="dropdown-item" href="saude.html">Saúde</a></li>
+            </ul>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-newspaper"></i>Notícias</a></li>
+          <li class="nav-item"><a class="nav-link" href="contacto.html"><i class="fas fa-envelope"></i>Contacto</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+           <!-- Botões de Login e Cadastrar (outline) -->
+          <a href="login.html" class="btn btn-outline-success">
+            <i class="fas fa-sign-in-alt"></i>
+            Login
+          </a>
+          <a href="#" class="btn btn-outline-primary">
+            <i class="fas fa-user-plus"></i>
+            Cadastrar
+          </a>
+          <!-- Idioma FUNCIONAL com data-i18n -->
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Idioma">
+              <i class="fas fa-globe"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#" data-lang="pt">🇧🇷 Português</a></li>
+              <li><a class="dropdown-item" href="#" data-lang="en">🇺🇸 English</a></li>
+              <li><a class="dropdown-item" href="#" data-lang="es">🇪🇸 Español</a></li>
+            </ul>
+          </div>
+          
+          <!-- INTERRUPTOR MODERNO DE TEMA (TOGGLE SWITCH) -->
+          <label class="theme-switch">
+            <input type="checkbox" id="themeToggle">
+            <span class="slider">
+              <i class="fas fa-sun"></i>
+              <i class="fas fa-moon"></i>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO com imagem de fundo e barra de pesquisa estilo Google Maps (AGORA FUNCIONAL) -->
+  <section class="hero-section d-flex align-items-center">
+    <div class="container text-center">
+      <h1 class="display-3 fw-bold mb-4 animate__animated animate__fadeInUp" data-i18n="hero_title">Formando líderes para o futuro</h1>
+      <p class="lead mb-5 w-75 mx-auto" data-i18n="hero_subtitle">Inovação, pesquisa e excelência acadêmica. Venha construir sua história com a gente.</p>
+      
+      <!-- Barra de pesquisa interativa (FILTRO DE CURSOS) -->
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <div class="input-group input-group-lg mb-3 shadow-lg rounded-pill overflow-hidden bg-white">
+            <span class="input-group-text bg-white border-0"></span>
+            <input type="text" class="form-control form-control-lg border-0" id="searchInput" placeholder="Buscar cursos ou localização..." aria-label="Search">
+            <button class="btn btn-primary px-4" type="button" id="searchButton"><i class="fas fa-search"></i></button>
+          </div>
+          <div class="small text-white-50">
+            <i class="fas fa-map-marker-alt text-danger me-1"></i> Katepa Zona da Voanvoala - Malanje, Angola
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO CURSOS com filtros por departamento e barra de pesquisa -->
+  <section class="py-5" id="cursos">
+    <div class="container">
+      <h2 class="text-center mb-4 fw-bold" data-i18n="courses_title">Nossos cursos e departamentos</h2>
+      <!-- Filtros interativos por departamento -->
+      <div class="d-flex justify-content-center gap-2 mb-5 flex-wrap">
+        <button class="btn btn-outline-primary filter-btn active" data-filter="all">Todos</button>
+        <button class="btn btn-outline-primary filter-btn" data-filter="eng">Engenharias</button>
+        <button class="btn btn-outline-primary filter-btn" data-filter="soc">Ciências Sociais</button>
+        <button class="btn btn-outline-primary filter-btn" data-filter="saude">Saúde</button>
+      </div>
+
+      <div class="row g-4" id="cardContainer">
+        <!-- Cards (mantidos iguais, mas com dados para busca) -->
+        <!-- Engenharia Informática -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="eng" data-name="Engenharia Informática" data-description="Departamento de Engenharias e Tecnologia · Ênfase em software e sistemas.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-laptop-code fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Engenharia Informática</h5>
+              <p class="card-text">Departamento de Engenharias e Tecnologia · Ênfase em software e sistemas.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Engenharia Agronômica -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="eng" data-name="Engenharia Agronômica" data-description="Departamento de Engenharias e Tecnologia · Tecnologia e sustentabilidade no campo.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-seedling fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Engenharia Agronômica</h5>
+              <p class="card-text">Departamento de Engenharias e Tecnologia · Tecnologia e sustentabilidade no campo.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Engenharia de Telecomunicações -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="eng" data-name="Engenharia de Telecomunicações" data-description="Departamento de Engenharias e Tecnologia · Redes e comunicações modernas.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-satellite-dish fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Engenharia de Telecomunicações</h5>
+              <p class="card-text">Departamento de Engenharias e Tecnologia · Redes e comunicações modernas.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Engenharia de Construção Civil -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="eng" data-name="Engenharia de Construção Civil" data-description="Departamento de Engenharias e Tecnologia · Projetos e infraestrutura.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-hard-hat fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Engenharia de Construção Civil</h5>
+              <p class="card-text">Departamento de Engenharias e Tecnologia · Projetos e infraestrutura.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Economia -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="soc" data-name="Economia" data-description="Departamento de Ciências Sociais · Análise econômica e mercados.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-chart-line fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Economia</h5>
+              <p class="card-text">Departamento de Ciências Sociais · Análise econômica e mercados.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Direito -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="soc" data-name="Direito" data-description="Departamento de Ciências Sociais · Formação jurídica com visão crítica.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-scale-balanced fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Direito</h5>
+              <p class="card-text">Departamento de Ciências Sociais · Formação jurídica com visão crítica.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Gestão de Recursos Humanos (GRH) -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="soc" data-name="Gestão de Recursos Humanos (GRH)" data-description="Departamento de Ciências Sociais · Gestão de pessoas e comportamento organizacional.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-users fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Gestão de Recursos Humanos (GRH)</h5>
+              <p class="card-text">Departamento de Ciências Sociais · Gestão de pessoas e comportamento organizacional.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Contabilidade -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="soc" data-name="Contabilidade" data-description="Departamento de Ciências Sociais · Ciências contábeis e finanças.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-calculator fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Contabilidade</h5>
+              <p class="card-text">Departamento de Ciências Sociais · Ciências contábeis e finanças.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Enfermagem -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="saude" data-name="Enfermagem" data-description="Departamento de Saúde · Cuidado humanizado e prática baseada em evidências.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-heartbeat fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Enfermagem</h5>
+              <p class="card-text">Departamento de Saúde · Cuidado humanizado e prática baseada em evidências.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Fisioterapia -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="saude" data-name="Fisioterapia" data-description="Departamento de Saúde · Reabilitação e qualidade de vida.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-bone fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Fisioterapia</h5>
+              <p class="card-text">Departamento de Saúde · Reabilitação e qualidade de vida.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+        <!-- Psicologia -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="saude" data-name="Psicologia" data-description="Departamento de Saúde · Compreensão do comportamento e processos mentais.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-brain fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Psicologia</h5>
+              <p class="card-text">Departamento de Saúde · Compreensão do comportamento e processos mentais.</p>
+              <a href="#" class="btn btn-sm btn-outline-primary stretched-link">Mais informações</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO NOTÍCIAS / EVENTOS (Carrossel) -->
+  <section class="py-5 bg-light" id="noticias">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="news_title">Últimas notícias e eventos</h2>
+      <div id="newsCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#newsCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#newsCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#newsCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner rounded-4 shadow">
+          <div class="carousel-item active">
+            <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop" class="d-block w-100" alt="formatura" style="height: 400px; object-fit: cover;">
+            <div class="carousel-caption d-none d-md-block news-caption">
+              <h5 data-i18n="news1_title">Colação de grau 2025</h5>
+              <p data-i18n="news1_desc">Mais de 800 formandos celebram conquista no ginásio poliesportivo.</p>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <img src="https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=2086&auto=format&fit=crop" class="d-block w-100" alt="pesquisa" style="height: 400px; object-fit: cover;">
+            <div class="carousel-caption d-none d-md-block news-caption">
+              <h5 data-i18n="news2_title">Descoberta em biotecnologia</h5>
+              <p data-i18n="news2_desc">Pesquisadores da universidade publicam estudo inédito sobre regeneração celular.</p>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop" class="d-block w-100" alt="evento" style="height: 400px; object-fit: cover;">
+            <div class="carousel-caption d-none d-md-block news-caption">
+              <h5 data-i18n="news3_title">Semana de Ciência e Tecnologia</h5>
+              <p data-i18n="news3_desc">De 10 a 15 de outubro, com palestras e feiras. Inscrições abertas.</p>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#newsCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#newsCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Próximo</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO NEWSLETTER (funcional com localStorage) -->
+  <section class="newsletter-section">
+    <div class="container text-center">
+      <h3 class="fw-bold mb-3" data-i18n="newsletter_title">Assine nossa Newsletter</h3>
+      <p class="mb-4" data-i18n="newsletter_subtitle">Receba novidades, eventos e dicas exclusivas no seu e-mail.</p>
+      <div class="newsletter-form">
+        <div class="input-group input-group-lg">
+          <input type="email" class="form-control" id="newsletterEmail" placeholder="Seu melhor e-mail" aria-label="Email">
+          <button class="btn btn-light" type="button" id="subscribeBtn"><i class="fas fa-paper-plane me-2"></i><span data-i18n="subscribe">Inscrever</span></button>
+        </div>
+        <div id="newsletterFeedback" class="mt-3 small"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHATBOT FLUTUANTE (agora abre janela de chat) -->
+  <div class="chatbot-btn" id="chatbotBtn">
+    <!-- Removido o link para chatbot.html, agora apenas a imagem que abre o chat -->
+    <img class="robot" src="images/IA-ISP.png" alt="Chatbot" />
+  </div>
+
+  <!-- Janela do Chatbot (antes estava comentada, agora ativa) -->
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <i class="fas fa-robot"></i> Assistente Virtual
+      <button class="btn-close btn-close-white ms-auto" id="closeChat" aria-label="Close"></button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="bot-msg">Olá! Sou o assistente da UniModern. Posso ajudar com cursos, inscrições ou eventos?</div>
+      <div class="user-msg">Quero informações sobre bolsas</div>
+      <div class="bot-msg">Ótimo! Temos bolsas de iniciação científica, prouni e monitoria. Qual seu curso de interesse?</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" placeholder="Digite sua mensagem..." id="chatInput">
+      <button id="sendMsg"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- BOTÃO VOLTAR AO TOPO (agora com mais espaçamento) -->
+  <button class="back-to-top" id="backToTop" title="Voltar ao topo">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <!-- RODAPÉ com mapa interativo -->
+  <footer class="bg-dark text-white pt-5 pb-4">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <h5><img src="images/ISPCAN-rbg.png" style="border-radius: 50px; width: 30px; height: 30px;" /> ISPCAN-Malanje</h5>
+          <p data-i18n="footer_about">Excelência em ensino, pesquisa e extensão há mais de 50 anos. Transformando vidas pelo conhecimento.</p>
+          <div class="d-flex gap-3 fs-4">
+            <a href="#" class="text-primary"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="text-warning"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="text-primary"><i class="fab fa-linkedin"></i></a>
+            <a href="#" class="text-danger"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <h6 data-i18n="quick_links">Links rápidos</h6>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="about">Sobre</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="library">Biblioteca</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="student_portal">Portal do aluno</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="jobs">Trabalhe conosco</a></li>
+          </ul>
+        </div>
+        <div class="col-md-3">
+          <h6 data-i18n="contact">Contacto</h6>
+          <p class="text-white-50"><i class="fas fa-phone me-2"></i>(11) 1234-5678</p>
+          <p class="text-white-50"><i class="fas fa-envelope me-2"></i>contato@unimodern.edu</p>
+          <p class="text-white-50"><i class="fas fa-clock me-2"></i>Seg-Sex: 8h às 20h</p>
+        </div>
+        <div class="col-md-3">
+          <h6 data-i18n="location">Localização</h6>
+          <div class="card location-card">
+            <div id="map" style="height: 150px; width: 100%;"></div>
+            <div class="card-body p-2 small text-white">
+              <i class="fas fa-map-pin text-primary me-1"></i> Av. Universitária, 1000, Malanje, Angola<br>
+              <i class="fas fa-phone me-1"></i> +244 123 456 789<br>
+              <a href="https://maps.google.com/?q=Av.+Universitária,+1000,+Malanje,+Angola" target="_blank" class="text-white-50 text-decoration-none">
+                <i class="fas fa-external-link-alt me-1"></i>Ver no Google Maps
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr class="my-4 bg-secondary">
+      <div class="text-center text-white-50">
+        <small>© 2025 ISPCAN-Malanje. Todos os direitos reservados. Desenvolvido Por: <span class="m-lg-1" style="color: blue"><b>António Laurindo Paulo</b></span> </small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts Bootstrap e customizados -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function() {
+      // ----- Tema (light/dark) com interruptor moderno -----
+      const themeToggle = document.getElementById('themeToggle');
+      const html = document.documentElement;
+      const currentTheme = localStorage.getItem('theme') || 'light';
+      
+      document.body.setAttribute('data-bs-theme', currentTheme);
+      themeToggle.checked = (currentTheme === 'dark');
+
+      themeToggle.addEventListener('change', function() {
+        let theme = this.checked ? 'dark' : 'light';
+        document.body.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+      });
+
+      // ----- Filtro de cursos (por departamento) -----
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const courseItems = document.querySelectorAll('.course-item');
+      
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          const filter = this.getAttribute('data-filter');
+          
+          courseItems.forEach(item => {
+            if (filter === 'all' || item.getAttribute('data-category') === filter) {
+              item.style.display = 'block';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        });
+      });
+
+      // ----- Barra de pesquisa (filtro por nome/descrição) -----
+      const searchInput = document.getElementById('searchInput');
+      const searchButton = document.getElementById('searchButton');
+
+      function filterCoursesBySearch() {
+        const term = searchInput.value.toLowerCase().trim();
+        courseItems.forEach(item => {
+          const name = item.getAttribute('data-name')?.toLowerCase() || '';
+          const desc = item.getAttribute('data-description')?.toLowerCase() || '';
+          if (name.includes(term) || desc.includes(term) || term === '') {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        // Reset active filter button to "Todos" when searching
+        filterBtns.forEach(b => b.classList.remove('active'));
+        document.querySelector('[data-filter="all"]').classList.add('active');
+      }
+
+      searchInput.addEventListener('input', filterCoursesBySearch);
+      searchButton.addEventListener('click', filterCoursesBySearch);
+
+      // ----- TRADUÇÃO (i18n) -----
+      const translations = {
+        pt: {
+          hero_title: 'Formando líderes para o futuro',
+          hero_subtitle: 'Inovação, pesquisa e excelência acadêmica. Venha construir sua história com a gente.',
+          courses_title: 'Nossos cursos e departamentos',
+          news_title: 'Últimas notícias e eventos',
+          news1_title: 'Colação de grau 2025',
+          news1_desc: 'Mais de 800 formandos celebram conquista no ginásio poliesportivo.',
+          news2_title: 'Descoberta em biotecnologia',
+          news2_desc: 'Pesquisadores da universidade publicam estudo inédito sobre regeneração celular.',
+          news3_title: 'Semana de Ciência e Tecnologia',
+          news3_desc: 'De 10 a 15 de outubro, com palestras e feiras. Inscrições abertas.',
+          newsletter_title: 'Assine nossa Newsletter',
+          newsletter_subtitle: 'Receba novidades, eventos e dicas exclusivas no seu e-mail.',
+          subscribe: 'Inscrever',
+          footer_about: 'Excelência em ensino, pesquisa e extensão há mais de 50 anos. Transformando vidas pelo conhecimento.',
+          quick_links: 'Links rápidos',
+          about: 'Sobre',
+          library: 'Biblioteca',
+          student_portal: 'Portal do aluno',
+          jobs: 'Trabalhe conosco',
+          contact: 'Contacto',
+          location: 'Localização'
+        },
+        en: {
+          hero_title: 'Shaping leaders for the future',
+          hero_subtitle: 'Innovation, research and academic excellence. Come build your story with us.',
+          courses_title: 'Our courses and departments',
+          news_title: 'Latest news and events',
+          news1_title: 'Graduation 2025',
+          news1_desc: 'More than 800 graduates celebrate achievement at the sports gymnasium.',
+          news2_title: 'Biotechnology breakthrough',
+          news2_desc: 'University researchers publish unprecedented study on cell regeneration.',
+          news3_title: 'Science and Technology Week',
+          news3_desc: 'October 10-15, with lectures and fairs. Open enrollment.',
+          newsletter_title: 'Subscribe to our Newsletter',
+          newsletter_subtitle: 'Receive news, events and exclusive tips in your email.',
+          subscribe: 'Subscribe',
+          footer_about: 'Excellence in teaching, research and extension for over 50 years. Transforming lives through knowledge.',
+          quick_links: 'Quick links',
+          about: 'About',
+          library: 'Library',
+          student_portal: 'Student portal',
+          jobs: 'Work with us',
+          contact: 'Contact',
+          location: 'Location'
+        },
+        es: {
+          hero_title: 'Formando líderes para el futuro',
+          hero_subtitle: 'Innovación, investigación y excelencia académica. Ven a construir tu historia con nosotros.',
+          courses_title: 'Nuestros cursos y departamentos',
+          news_title: 'Últimas noticias y eventos',
+          news1_title: 'Graduación 2025',
+          news1_desc: 'Más de 800 graduados celebran su logro en el gimnasio polideportivo.',
+          news2_title: 'Descubrimiento en biotecnología',
+          news2_desc: 'Investigadores de la universidad publican un estudio inédito sobre regeneración celular.',
+          news3_title: 'Semana de Ciencia y Tecnología',
+          news3_desc: 'Del 10 al 15 de octubre, con charlas y ferias. Inscripciones abiertas.',
+          newsletter_title: 'Suscríbete a nuestro Newsletter',
+          newsletter_subtitle: 'Recibe novedades, eventos y consejos exclusivos en tu correo.',
+          subscribe: 'Suscribir',
+          footer_about: 'Excelencia en enseñanza, investigación y extensión por más de 50 años. Transformando vidas a través del conocimiento.',
+          quick_links: 'Enlaces rápidos',
+          about: 'Sobre',
+          library: 'Biblioteca',
+          student_portal: 'Portal del alumno',
+          jobs: 'Trabaja con nosotros',
+          contact: 'Contacto',
+          location: 'Ubicación'
+        }
+      };
+
+      function setLanguage(lang) {
+        const elements = document.querySelectorAll('[data-i18n]');
+        elements.forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (translations[lang] && translations[lang][key]) {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+              el.placeholder = translations[lang][key];
+            } else {
+              el.textContent = translations[lang][key];
+            }
+          }
+        });
+        localStorage.setItem('preferredLang', lang);
+      }
+
+      // Carregar idioma preferido ou usar português
+      const savedLang = localStorage.getItem('preferredLang') || 'pt';
+      setLanguage(savedLang);
+
+      // Listeners nos itens do dropdown de idioma
+      document.querySelectorAll('[data-lang]').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const lang = e.target.closest('[data-lang]').getAttribute('data-lang');
+          setLanguage(lang);
+        });
+      });
+
+      // ----- Newsletter com localStorage (banco de memória) -----
+      const subscribeBtn = document.getElementById('subscribeBtn');
+      const newsletterEmail = document.getElementById('newsletterEmail');
+      const newsletterFeedback = document.getElementById('newsletterFeedback');
+
+      // Recupera lista de emails ou inicializa array vazio
+      let subscribers = JSON.parse(localStorage.getItem('newsletter_emails')) || [];
+
+      subscribeBtn.addEventListener('click', () => {
+        const email = newsletterEmail.value.trim();
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+          newsletterFeedback.innerHTML = '<span class="text-warning">Por favor, insira um e-mail válido.</span>';
+          return;
+        }
+        if (subscribers.includes(email)) {
+          newsletterFeedback.innerHTML = '<span class="text-warning">Este e-mail já está inscrito.</span>';
+        } else {
+          subscribers.push(email);
+          localStorage.setItem('newsletter_emails', JSON.stringify(subscribers));
+          newsletterFeedback.innerHTML = '<span class="text-success">✓ Inscrição realizada com sucesso!</span>';
+          newsletterEmail.value = '';
+        }
+      });
+
+      // ----- Chatbot flutuante (agora funcional) -----
+      const chatbotBtn = document.getElementById('chatbotBtn');
+      const chatWindow = document.getElementById('chatWindow');
+      const closeChat = document.getElementById('closeChat');
+      const sendBtn = document.getElementById('sendMsg');
+      const chatInput = document.getElementById('chatInput');
+      const chatBody = document.getElementById('chatBody');
+
+      function openChat() {
+        chatWindow.style.display = 'block';
+      }
+      function closeChatFunc() {
+        chatWindow.style.display = 'none';
+      }
+
+      chatbotBtn.addEventListener('click', openChat);
+      closeChat.addEventListener('click', closeChatFunc);
+
+      sendBtn.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+
+      function sendMessage() {
+        const msg = chatInput.value.trim();
+        if (msg === '') return;
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-msg';
+        userDiv.textContent = msg;
+        chatBody.appendChild(userDiv);
+        chatInput.value = '';
+        setTimeout(() => {
+          const botDiv = document.createElement('div');
+          botDiv.className = 'bot-msg';
+          botDiv.textContent = 'Obrigado pela mensagem! Um atendente entrará em contato em breve.';
+          chatBody.appendChild(botDiv);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }, 500);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+
+      window.addEventListener('click', (e) => {
+        if (!chatbotBtn.contains(e.target) && !chatWindow.contains(e.target) && chatWindow.style.display === 'block') {
+          closeChatFunc();
+        }
+      });
+      chatWindow.addEventListener('click', (e) => e.stopPropagation());
+
+      // ----- Botão voltar ao topo -----
+      const backToTop = document.getElementById('backToTop');
+      
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+          backToTop.classList.add('show');
+        } else {
+          backToTop.classList.remove('show');
+        }
+      });
+
+      backToTop.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      // ----- Smooth scroll para âncoras (opcional) -----
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) target.scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+
+      // ----- Mapa (Leaflet) -----
+      var map = L.map('map').setView([-9.5515, 16.3408], 13);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+      L.marker([-9.5515, 16.3408]).addTo(map)
+        .bindPopup('ISPCAN-Malanje<br>Av. Universitária, 1000')
+        .openPopup();
+    })();
+  </script>
+</body>
+</html>

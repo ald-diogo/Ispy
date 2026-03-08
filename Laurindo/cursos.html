@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cursos | Ensino Superior</title>
+  <!-- Bootstrap 5 + Icons + Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Font (opcional) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background: #f4f7fc;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+      transition: transform 0.2s;
+      border: 1px solid rgba(0,0,0,0.03);
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.05);
+    }
+    .stat-icon {
+      font-size: 2.5rem;
+      color: #0d6efd;
+      margin-bottom: 10px;
+    }
+    .departamento-card {
+      background: white;
+      border-radius: 24px;
+      padding: 20px 15px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.2s;
+      cursor: pointer;
+      height: 100%;
+    }
+    .departamento-card:hover {
+      border-color: #0d6efd;
+      box-shadow: 0 10px 25px rgba(13,110,253,0.1);
+      transform: scale(1.02);
+    }
+    .departamento-card.active {
+      border: 2px solid #0d6efd;
+      background: #f0f6ff;
+    }
+    .departamento-icon {
+      font-size: 2.8rem;
+      color: #0d6efd;
+      margin-bottom: 10px;
+    }
+    .curso-card {
+      background: white;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: 0.2s;
+      height: 100%;
+    }
+    .curso-card:hover {
+      border-color: #0d6efd;
+      box-shadow: 0 15px 30px rgba(13,110,253,0.1);
+    }
+    .curso-icon {
+      font-size: 2.2rem;
+      color: #0d6efd;
+      margin-right: 15px;
+    }
+    .badge-grau {
+      background: #e7f1ff;
+      color: #0d6efd;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+    }
+    .btn-outline-primary-custom {
+      border: 1px solid #0d6efd20;
+      background: white;
+      border-radius: 50px;
+      padding: 8px 18px;
+      color: #0d6efd;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .btn-outline-primary-custom:hover {
+      background: #0d6efd;
+      color: white;
+    }
+    .search-box {
+      border-radius: 60px;
+      border: 1px solid #dee2e6;
+      padding: 12px 25px;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    .search-box:focus {
+      outline: none;
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 4px rgba(13,110,253,0.1);
+    }
+    .filter-dropdown {
+      border-radius: 60px;
+      padding: 10px 25px;
+      border: 1px solid #dee2e6;
+      background: white;
+    }
+    .section-title {
+      font-weight: 600;
+      font-size: 1.75rem;
+      letter-spacing: -0.02em;
+    }
+  </style>
+</head>
+<body class="p-4">
+
+<div class="container-lg py-4">
+  
+  <!-- cabeçalho + pesquisa -->
+  <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+    <h1 class="section-title mb-0"><i class="bi bi-book-half me-2 text-primary"></i>Cursos</h1>
+    <div class="mt-3 mt-sm-0 w-100 w-sm-50">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0 search-box" style="border-radius: 60px 0 0 60px;"><i class="bi bi-search text-primary"></i></span>
+        <input type="text" id="searchInput" class="form-control border-start-0 search-box" placeholder="Pesquisar curso ou departamento..." style="border-left: none;">
+      </div>
+    </div>
+  </div>
+
+  <!-- estatísticas animadas (simples) -->
+  <div class="row g-3 mb-5">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-mortarboard-fill"></i></div>
+        <h3 class="fw-bold mb-0">25</h3>
+        <p class="text-secondary mb-0">Cursos</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-building"></i></div>
+        <h3 class="fw-bold mb-0">6</h3>
+        <p class="text-secondary mb-0">Departamentos</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+        <h3 class="fw-bold mb-0">4.5k</h3>
+        <p class="text-secondary mb-0">Estudantes</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-person-video3"></i></div>
+        <h3 class="fw-bold mb-0">200</h3>
+        <p class="text-secondary mb-0">Professores</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- filtros inteligentes -->
+  <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+    <span class="fw-semibold"><i class="bi bi-funnel me-1"></i>Filtrar por:</span>
+    <select id="grauFilter" class="filter-dropdown form-select w-auto">
+      <option value="todos">🎓 Todos os graus</option>
+      <option value="Licenciatura">📘 Licenciatura</option>
+      <option value="Mestrado">📙 Mestrado</option>
+      <option value="Doutoramento">📕 Doutoramento</option>
+    </select>
+    <select id="departamentoFilter" class="filter-dropdown form-select w-auto d-none d-md-block">
+      <option value="todos">🏛️ Todos os departamentos (cards abaixo)</option>
+    </select>
+  </div>
+
+  <!-- departamentos (cards) -->
+  <h2 class="h4 fw-bold mb-3"><i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i>Departamentos</h2>
+  <div id="departamentosContainer" class="row g-3 mb-5"></div>
+
+  <!-- cursos do departamento selecionado -->
+  <div class="d-flex align-items-center justify-content-between mt-4 mb-3">
+    <h2 class="h4 fw-bold mb-0" id="tituloDepartamentoSelecionado"><i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>Cursos do Departamento</h2>
+    <span class="badge bg-primary rounded-pill px-3 py-2" id="contadorCursos">0 cursos</span>
+  </div>
+  <div id="cursosContainer" class="row g-3"></div>
+
+  <!-- Modal de detalhes do curso -->
+  <div class="modal fade" id="cursoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content" style="border-radius: 30px;">
+        <div class="modal-header border-0 pt-4 px-4">
+          <h5 class="modal-title fw-bold" id="modalTitulo">Curso</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="row">
+            <div class="col-md-7">
+              <p><i class="bi bi-info-circle me-2 text-primary"></i><strong>Informações gerais</strong></p>
+              <div id="modalInfo"></div>
+              <p class="mt-3"><i class="bi bi-briefcase me-2 text-primary"></i><strong>Saídas profissionais</strong></p>
+              <div id="modalSaidas" class="mb-3"></div>
+            </div>
+            <div class="col-md-5">
+              <p><i class="bi bi-calendar-week me-2 text-primary"></i><strong>Plano curricular (exemplo)</strong></p>
+              <div id="modalPlano"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pb-4 px-4">
+          <button type="button" class="btn btn-outline-primary-custom px-4" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-primary px-4 rounded-pill" disabled><i class="bi bi-pencil-square me-2"></i>Candidatar-se</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- dados e lógica JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function() {
+    // ------- base de dados simulada --------
+    const departamentos = [
+      { id: 1, nome: "Informática", icon: "fa-laptop-code", cursos: [
+          { id: 101, nome: "Engenharia Informática", grau: "Licenciatura", duracao: "4 anos", turno: "Diurno", descricao: "Curso base em ciências da computação e engenharia de software.", saidas: "Programador, Arquiteto de Software, Cientista de Dados", plano: "1º ano: Programação, Matemática; 2º ano: Algoritmos, BD; 3º ano: IA, Redes" },
+          { id: 102, nome: "Sistemas de Informação", grau: "Licenciatura", duracao: "4 anos", turno: "Diurno", descricao: "Foco em gestão de sistemas e tecnologia nas organizações.", saidas: "Analista de Sistemas, Gestor de TI, Consultor", plano: "1º ano: Fundamentos de SI; 2º ano: BD, Web; 3º ano: ERP, Segurança" },
+          { id: 103, nome: "Segurança Informática", grau: "Mestrado", duracao: "2 anos", turno: "Pós-laboral", descricao: "Especialização em cibersegurança e ethical hacking.", saidas: "Analista de Segurança, Perito Forense, Consultor", plano: "1º ano: Criptografia, Redes Seguras; 2º ano: Hacking Ético, Auditoria" },
+          { id: 104, nome: "Inteligência Artificial", grau: "Mestrado", duracao: "2 anos", turno: "Diurno", descricao: "Machine learning, deep learning e robótica inteligente.", saidas: "Engenheiro de IA, Especialista em ML, Investigador", plano: "1º ano: ML, Probabilidade; 2º ano: Visão, PLN, Robótica" },
+          { id: 105, nome: "Engenharia de Software", grau: "Licenciatura", duracao: "4 anos", turno: "Diurno", descricao: "Desenvolvimento e gestão de projetos de software.", saidas: "Dev, Scrum Master, QA", plano: "1º ano: Prog, Requisitos; 2º ano: Arquitetura, Testes; 3º ano: Projeto" }
+      ] },
+      { id: 2, nome: "Engenharia", icon: "fa-gear", cursos: [
+          { id: 201, nome: "Engenharia Civil", grau: "Licenciatura", duracao: "5 anos", turno: "Diurno", descricao: "Projetos de construção e infraestrutura.", saidas: "Engenheiro Civil, Gestor de Obras", plano: "1º: Física, Materiais; 2º: Resistência, Hidráulica" },
+          { id: 202, nome: "Engenharia Mecânica", grau: "Licenciatura", duracao: "5 anos", turno: "Diurno", descricao: "Mecânica dos fluidos, automação.", saidas: "Eng. Mecânico, Projetista", plano: "1º: Termodinâmica, Mecânica; 2º: Materiais" },
+          { id: 203, nome: "Engenharia Eletrotécnica", grau: "Mestrado", duracao: "2 anos", turno: "Diurno", descricao: "Energia, automação e controlo.", saidas: "Eng. Eletrotécnico, Projetista", plano: "1º: Circuitos, Eletrónica; 2º: Energia" },
+          { id: 204, nome: "Engenharia Química", grau: "Licenciatura", duracao: "5 anos", turno: "Diurno", descricao: "Processos químicos e biotecnologia.", saidas: "Eng. Químico, Indústria", plano: "1º: Química Geral; 2º: Termodinâmica Química" }
+      ] },
+      { id: 3, nome: "Direito", icon: "fa-gavel", cursos: [
+          { id: 301, nome: "Direito", grau: "Licenciatura", duracao: "4 anos", turno: "Diurno", descricao: "Formação base em ciências jurídicas.", saidas: "Advogado, Juiz, Jurista", plano: "1º: Introdução, Direito Constitucional; 2º: Civil, Penal" },
+          { id: 302, nome: "Direito Internacional", grau: "Mestrado", duracao: "2 anos", turno: "Diurno", descricao: "Relações internacionais e direito europeu.", saidas: "Consultor Internacional, Diplomata", plano: "1º: Direito UE, Público Internacional" },
+          { id: 303, nome: "Ciências Jurídicas", grau: "Doutoramento", duracao: "3 anos", turno: "Pós-laboral", descricao: "Investigação avançada em direito.", saidas: "Investigador, Professor", plano: "Tese, seminários" }
+      ] },
+      { id: 4, nome: "Ciências da Saúde", icon: "fa-hospital", cursos: [
+          { id: 401, nome: "Medicina", grau: "Mestrado Integrado", duracao: "6 anos", turno: "Diurno", descricao: "Curso de medicina com prática clínica.", saidas: "Médico, Cirurgião", plano: "Pré-clínico + clínico" },
+          { id: 402, nome: "Enfermagem", grau: "Licenciatura", duracao: "4 anos", turno: "Diurno", descricao: "Cuidados de enfermagem.", saidas: "Enfermeiro", plano: "Teórico + estágios" },
+          { id: 403, nome: "Farmácia", grau: "Mestrado", duracao: "5 anos", turno: "Diurno", descricao: "Ciências farmacêuticas.", saidas: "Farmacêutico", plano: "Química farmacêutica, farmacologia" },
+          { id: 404, nome: "Saúde Pública", grau: "Doutoramento", duracao: "3 anos", turno: "Pós-laboral", descricao: "Epidemiologia e gestão em saúde.", saidas: "Investigador, Gestor", plano: "Metodologia, bioestatística" }
+      ] },
+      { id: 5, nome: "Economia", icon: "fa-chart-line", cursos: [
+          { id: 501, nome: "Economia", grau: "Licenciatura", duracao: "3 anos", turno: "Diurno", descricao: "Teoria económica e políticas.", saidas: "Economista, Consultor", plano: "Micro, Macro, Econometria" },
+          { id: 502, nome: "Gestão", grau: "Licenciatura", duracao: "3 anos", turno: "Diurno", descricao: "Administração e negócios.", saidas: "Gestor, Controller", plano: "Contabilidade, Marketing, Finanças" },
+          { id: 503, nome: "Finanças", grau: "Mestrado", duracao: "2 anos", turno: "Diurno", descricao: "Mercados e investimentos.", saidas: "Analista Financeiro, Trader", plano: "Derivados, Risco" }
+      ] }
+    ];
+
+    // referências DOM
+    const deptContainer = document.getElementById('departamentosContainer');
+    const tituloDeptSelecionado = document.getElementById('tituloDepartamentoSelecionado');
+    const cursosContainer = document.getElementById('cursosContainer');
+    const contadorCursos = document.getElementById('contadorCursos');
+    const searchInput = document.getElementById('searchInput');
+    const grauFilter = document.getElementById('grauFilter');
+    const departamentoFilterSelect = document.getElementById('departamentoFilter');
+
+    let currentDepartmentId = 1;  // informática como padrão
+    let currentCourses = [];
+
+    // popular select de departamentos (para filtro alternativo)
+    departamentos.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = d.nome;
+      departamentoFilterSelect.appendChild(opt);
+    });
+
+    // renderizar cards de departamentos
+    function renderDepartamentos() {
+      deptContainer.innerHTML = '';
+      departamentos.forEach(dept => {
+        const col = document.createElement('div');
+        col.className = 'col-6 col-md-4 col-lg-2';
+        col.innerHTML = `
+          <div class="departamento-card ${dept.id === currentDepartmentId ? 'active' : ''}" data-dept-id="${dept.id}">
+            <div class="departamento-icon"><i class="fas ${dept.icon}"></i></div>
+            <h6 class="fw-bold mb-1">${dept.nome}</h6>
+            <p class="text-secondary small mb-2">${dept.cursos.length} cursos</p>
+            <button class="btn btn-sm btn-outline-primary-custom px-3 ver-cursos-btn" data-dept-id="${dept.id}">Ver cursos</button>
+          </div>
+        `;
+        deptContainer.appendChild(col);
+      });
+
+      // adicionar eventos aos botões "Ver cursos"
+      document.querySelectorAll('.ver-cursos-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const deptId = parseInt(btn.dataset.deptId);
+          setActiveDepartment(deptId);
+        });
+      });
+
+      // também ao clicar no card todo (opcional)
+      document.querySelectorAll('.departamento-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          if (e.target.classList.contains('ver-cursos-btn')) return;
+          const deptId = parseInt(card.dataset.deptId);
+          setActiveDepartment(deptId);
+        });
+      });
+    }
+
+    // define departamento ativo, atualiza UI e renderiza cursos
+    function setActiveDepartment(deptId) {
+      currentDepartmentId = deptId;
+      // atualizar classe active
+      document.querySelectorAll('.departamento-card').forEach(card => {
+        const id = parseInt(card.dataset.deptId);
+        if (id === deptId) card.classList.add('active');
+        else card.classList.remove('active');
+      });
+      // atualizar título
+      const dept = departamentos.find(d => d.id === deptId);
+      tituloDeptSelecionado.innerHTML = `<i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>Cursos do Departamento: ${dept.nome}`;
+      // re-aplicar filtros e renderizar
+      filtrarERenderizarCursos();
+    }
+
+    // filtra cursos de acordo com search e grau, e atualiza container
+    function filtrarERenderizarCursos() {
+      const dept = departamentos.find(d => d.id === currentDepartmentId);
+      if (!dept) return;
+
+      let cursosFiltrados = dept.cursos;
+
+      // filtro por grau
+      const grauSelecionado = grauFilter.value;
+      if (grauSelecionado !== 'todos') {
+        cursosFiltrados = cursosFiltrados.filter(c => c.grau.includes(grauSelecionado));
+      }
+
+      // filtro por texto (search)
+      const termo = searchInput.value.toLowerCase().trim();
+      if (termo !== '') {
+        cursosFiltrados = cursosFiltrados.filter(c => c.nome.toLowerCase().includes(termo));
+      }
+
+      currentCourses = cursosFiltrados;
+      renderCursos(cursosFiltrados);
+    }
+
+    // desenha os cards de curso
+    function renderCursos(cursos) {
+      cursosContainer.innerHTML = '';
+      contadorCursos.innerText = cursos.length + (cursos.length === 1 ? ' curso' : ' cursos');
+
+      if (cursos.length === 0) {
+        cursosContainer.innerHTML = '<div class="col-12"><div class="alert alert-light text-center py-5">Nenhum curso encontrado com os filtros atuais.</div></div>';
+        return;
+      }
+
+      cursos.forEach(curso => {
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4';
+        col.innerHTML = `
+          <div class="curso-card h-100 d-flex flex-column">
+            <div class="d-flex align-items-center mb-2">
+              <i class="fas ${departamentos.find(d => d.id === currentDepartmentId).icon} curso-icon"></i>
+              <h5 class="fw-bold mb-0">${curso.nome}</h5>
+            </div>
+            <div class="mb-2">
+              <span class="badge-grau me-2"><i class="bi bi-tag"></i> ${curso.grau}</span>
+              <span class="badge-grau"><i class="bi bi-clock"></i> ${curso.duracao}</span>
+            </div>
+            <p class="text-secondary small mb-3"><i class="bi bi-clock-history me-1"></i>Turno: ${curso.turno}</p>
+            <div class="mt-auto">
+              <button class="btn btn-outline-primary-custom w-100 ver-detalhes-btn" data-curso-id="${curso.id}" data-dept-id="${currentDepartmentId}">Ver detalhes</button>
+            </div>
+          </div>
+        `;
+        cursosContainer.appendChild(col);
+      });
+
+      // adicionar listeners aos novos botões de detalhe
+      document.querySelectorAll('.ver-detalhes-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const cursoId = parseInt(btn.dataset.cursoId);
+          const deptId = parseInt(btn.dataset.deptId);
+          const dept = departamentos.find(d => d.id === deptId);
+          const curso = dept.cursos.find(c => c.id === cursoId);
+          if (curso) abrirModalCurso(curso, dept.nome);
+        });
+      });
+    }
+
+    // preenche e abre modal
+    function abrirModalCurso(curso, deptNome) {
+      document.getElementById('modalTitulo').innerHTML = `<i class="fas ${departamentos.find(d => d.nome === deptNome).icon} me-2"></i>${curso.nome}`;
+      
+      const infoDiv = document.getElementById('modalInfo');
+      infoDiv.innerHTML = `
+        <p><span class="fw-semibold">Grau:</span> ${curso.grau}</p>
+        <p><span class="fw-semibold">Duração:</span> ${curso.duracao}</p>
+        <p><span class="fw-semibold">Departamento:</span> ${deptNome}</p>
+        <p><span class="fw-semibold">Turno:</span> ${curso.turno}</p>
+        <p><span class="fw-semibold">Descrição:</span> ${curso.descricao}</p>
+      `;
+
+      document.getElementById('modalSaidas').innerHTML = `<p>${curso.saidas}</p>`;
+
+      const planoLi = curso.plano.split(';').map(item => `<li class="list-group-item bg-light small">${item.trim()}</li>`).join('');
+      document.getElementById('modalPlano').innerHTML = `<ul class="list-group list-group-flush">${planoLi}</ul>`;
+
+      const modal = new bootstrap.Modal(document.getElementById('cursoModal'));
+      modal.show();
+    }
+
+    // inicializa com departamento padrão (Informática)
+    renderDepartamentos();
+
+    // carregar cursos iniciais (departamento 1)
+    setActiveDepartment(1);
+
+    // eventos de filtro
+    searchInput.addEventListener('input', filtrarERenderizarCursos);
+    grauFilter.addEventListener('change', filtrarERenderizarCursos);
+    departamentoFilterSelect.addEventListener('change', (e) => {
+      const deptId = parseInt(e.target.value);
+      if (!isNaN(deptId)) setActiveDepartment(deptId);
+    });
+
+    // pequeno detalhe: quando clicar num departamento, o select acompanha (opcional)
+    // não obrigatório, mas pode ser interessante
+    window.setActiveDepartment = function(id) {
+      setActiveDepartment(id);
+      if (departamentoFilterSelect) departamentoFilterSelect.value = id;
+    };
+
+  })();
+</script>
+
+<!-- rodapé simples -->
+<footer class="text-center text-secondary small mt-5 opacity-50">Instituição de Ensino Superior — Portal Académico • Cursos organizados por departamento</footer>
+</body>
+</html>

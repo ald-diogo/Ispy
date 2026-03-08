@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISPCAN-Malanje | Contactos</title>
+  <!-- Bootstrap 5.3 + Ícones -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Leaflet (mapa interativo) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    /* ----- Variáveis e reset suave ----- */
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.15);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --hero-overlay: linear-gradient(135deg, rgba(0, 51, 102, 0.8) 0%, rgba(0, 153, 204, 0.7) 100%);
+      --card-hover: translateY(-10px) scale(1.02);
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body {
+      transition: background-color 0.3s, color 0.2s;
+    }
+    /* --- Efeito glass no header --- */
+    .navbar-modern {
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      background-color: var(--glass-bg) !important;
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    /* --- Hero com imagem de fundo e parallax --- */
+    .hero-section {
+      background: url('images/ISPCAN-BG.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: white;
+      padding: 150px 0 120px;
+      margin-top: -1px;
+      position: relative;
+    }
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      /*background: var(--hero-overlay);*/
+      z-index: 0;
+    }
+    .hero-section .container {
+      position: relative;
+      z-index: 2;
+    }
+    /* --- Botões rápidos no hero --- */
+    .quick-buttons .btn {
+      backdrop-filter: blur(8px);
+      background-color: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      margin: 0 5px;
+      transition: var(--transition-smooth);
+    }
+    .quick-buttons .btn:hover {
+      background-color: rgba(255,255,255,0.35);
+      transform: scale(1.05);
+    }
+    /* --- Cards flat com animação --- */
+    .about-card {
+      border: none;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 15px 30px -12px rgba(0,0,0,0.2);
+      transition: var(--transition-smooth);
+      overflow: hidden;
+    }
+    [data-bs-theme="dark"] .about-card {
+      background: rgba(30, 30, 40, 0.8);
+      box-shadow: 0 15px 30px -12px rgba(0,150,255,0.15);
+    }
+    .about-card:hover {
+      transform: var(--card-hover);
+      box-shadow: 0 25px 40px -15px rgba(0,120,200,0.4);
+    }
+    /* --- Formulário de contacto com glass --- */
+    .contact-form {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(4px);
+      border-radius: 25px;
+      padding: 30px;
+    }
+    [data-bs-theme="dark"] .contact-form {
+      background: rgba(30,30,40,0.8);
+    }
+    .contact-form .form-control, .contact-form .form-select {
+      background: rgba(255,255,255,0.3);
+      border: 1px solid rgba(0,0,0,0.1);
+      backdrop-filter: blur(2px);
+    }
+    [data-bs-theme="dark"] .contact-form .form-control,
+    [data-bs-theme="dark"] .contact-form .form-select {
+      background: rgba(0,0,0,0.3);
+      color: #eee;
+      border-color: #444;
+    }
+    /* --- Cards de departamento --- */
+    .dept-card {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(4px);
+      padding: 20px;
+      text-align: center;
+      transition: var(--transition-smooth);
+      height: 100%;
+    }
+    [data-bs-theme="dark"] .dept-card {
+      background: rgba(30,30,40,0.8);
+    }
+    .dept-card:hover {
+      transform: var(--card-hover);
+      box-shadow: 0 20px 30px -10px rgba(0,120,200,0.3);
+    }
+    .dept-card i {
+      font-size: 2.5rem;
+      color: #0d6efd;
+      margin-bottom: 15px;
+    }
+    /* --- Mapas Leaflet --- */
+    #mapLarge {
+      height: 400px;
+      width: 100%;
+      border-radius: 20px;
+      z-index: 1;
+    }
+    #map {
+      height: 150px;
+      width: 100%;
+      border-radius: 10px;
+    }
+    /* --- Redes sociais animadas --- */
+    .social-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #0d6efd;
+      transition: 0.3s;
+      margin: 0 10px;
+    }
+    .social-icon:hover {
+      background: #0d6efd;
+      color: white;
+      transform: translateY(-10px);
+    }
+    /* --- Botões filtro ativos --- */
+    .filter-btn.active {
+      background-color: #0d6efd;
+      color: white;
+      border-color: #0d6efd;
+    }
+    /* --- Botão flutuante chatbot e back-to-top --- */
+    .chatbot-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      background: #0d6efd;
+      border: none;
+      box-shadow: 0 10px 25px rgba(0,100,255,0.4);
+      font-size: 28px;
+      color: white;
+      cursor: pointer;
+      z-index: 1050;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chatbot-btn:hover {
+      transform: scale(1.1);
+      background: #0b5ed7;
+    }
+    .chatbot-btn img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+    }
+    .chat-window {
+      position: fixed;
+      bottom: 110px;
+      right: 30px;
+      width: 320px;
+      max-width: calc(100% - 60px);
+      background: white;
+      border-radius: 25px 25px 15px 15px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      z-index: 1050;
+      display: none;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    [data-bs-theme="dark"] .chat-window {
+      background: #2d2d3a;
+      color: #eee;
+      border-color: #444;
+    }
+    .chat-header {
+      background: #0d6efd;
+      color: white;
+      padding: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chat-body {
+      padding: 15px;
+      max-height: 250px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bot-msg, .user-msg {
+      padding: 10px 14px;
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .bot-msg {
+      background: #f0f2f5;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+    [data-bs-theme="dark"] .bot-msg {
+      background: #3a3a4a;
+      color: #fff;
+    }
+    .user-msg {
+      background: #0d6efd;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+    .chat-input-area {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
+    }
+    [data-bs-theme="dark"] .chat-input-area {
+      background: #222230;
+      border-color: #444;
+    }
+    .chat-input-area input {
+      flex: 1;
+      border-radius: 30px;
+      border: 1px solid #ccc;
+      padding: 8px 15px;
+      outline: none;
+    }
+    .chat-input-area button {
+      background: transparent;
+      border: none;
+      color: #0d6efd;
+      font-size: 22px;
+      margin-left: 8px;
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 120px; /* Aumentado para 120px (30 do chat + 65 altura + 25 espaçamento) */
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #0d6efd;
+      color: white;
+      border: none;
+      box-shadow: 0 5px 15px rgba(0,100,255,0.3);
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1040;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.8);
+    }
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+    .back-to-top:hover {
+      background: #0b5ed7;
+      transform: scale(1.1);
+    }
+    .logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50px;
+    }
+    /* Interruptor de tema */
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+      margin-left: 10px;
+    }
+    .theme-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 24px;
+      width: 24px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+      z-index: 2;
+    }
+    input:checked + .slider {
+      background-color: #0d6efd;
+    }
+    input:checked + .slider:before {
+      transform: translateX(30px);
+    }
+    .slider i {
+      font-size: 16px;
+      z-index: 1;
+      transition: 0.4s;
+    }
+    .slider i:first-child {
+      color: #f39c12;
+      margin-right: auto;
+    }
+    .slider i:last-child {
+      color: #f1c40f;
+      margin-left: auto;
+      opacity: 0.3;
+    }
+    input:checked + .slider i:last-child {
+      opacity: 1;
+    }
+    input:checked + .slider i:first-child {
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body data-bs-theme="light">
+  <!-- CABEÇALHO MODERNO -->
+  <nav class="navbar navbar-expand-lg navbar-modern sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3" href="#">
+        <img class="logo" src="images/ISPCAN-rbg.png" alt="Logo"> ISPCAN-Malanje
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-home"></i>Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="sobre.html"><i class="fas fa-info-circle"></i>Sobre</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="fas fa-book"></i>Cursos</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="engenharia.html">Engenharias</a></li>
+              <li><a class="dropdown-item" href="ciencias.html">Ciências Sociais</a></li>
+              <li><a class="dropdown-item" href="saude.html">Saúde</a></li>
+            </ul>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-newspaper"></i>Notícias</a></li>
+          <li class="nav-item"><a class="nav-link active" href="#"><i class="fas fa-envelope"></i>Contacto</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+           <!-- Botões de Login e Cadastrar (outline) -->
+          <a href="login.html" class="btn btn-outline-success">
+            <i class="fas fa-sign-in-alt"></i>
+            Login
+          </a>
+          <a href="#" class="btn btn-outline-primary">
+            <i class="fas fa-user-plus"></i>
+            Cadastrar
+          </a>
+          <!-- Idioma -->
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary rounded-circle" type="button" data-bs-toggle="dropdown">
+              <i class="fas fa-globe"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#" data-lang="pt">🇧🇷 Português</a></li>
+              <li><a class="dropdown-item" href="#" data-lang="en">🇺🇸 English</a></li>
+              <li><a class="dropdown-item" href="#" data-lang="es">🇪🇸 Español</a></li>
+            </ul>
+          </div>
+          <!-- Tema -->
+          <label class="theme-switch">
+            <input type="checkbox" id="themeToggle">
+            <span class="slider">
+              <i class="fas fa-sun"></i>
+              <i class="fas fa-moon"></i>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO CONTACTOS -->
+  <section class="hero-section d-flex align-items-center">
+    <div class="container text-center">
+      <h1 class="display-3 fw-bold mb-4" data-i18n="contact_hero_title"> Contacte-nos</h1>
+      <p class="lead mb-5 w-75 mx-auto" data-i18n="contact_hero_subtitle">Estamos disponíveis para responder às suas dúvidas sobre cursos, admissões, serviços académicos e apoio ao estudante.</p>
+      <div class="quick-buttons d-flex justify-content-center flex-wrap gap-2">
+        <a href="#formulario" class="btn btn-lg"><i class="fas fa-envelope me-2"></i><span data-i18n="quick_send">Enviar mensagem</span></a>
+        <a href="#mapa" class="btn btn-lg"><i class="fas fa-map-marker-alt me-2"></i><span data-i18n="quick_location">Ver localização</span></a>
+        <a href="#" class="btn btn-lg" id="quickChat"><i class="fas fa-comment-dots me-2"></i><span data-i18n="quick_chat">Falar com o chatbot</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFORMAÇÕES DE CONTACTO -->
+  <section class="py-5">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="contact_info_title">Informações de Contacto</h2>
+      <div class="row g-4">
+        <div class="col-md-3">
+          <div class="about-card h-100 p-4 text-center">
+            <i class="fas fa-map-marker-alt fa-4x mb-3 text-primary"></i>
+            <h4 data-i18n="address_title">Endereço</h4>
+            <p class="mb-0" data-i18n="address_text">Instituto Superior Politécnico<br>Rua da Educação, Malanje – Angola</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="about-card h-100 p-4 text-center">
+            <i class="fas fa-phone-alt fa-4x mb-3 text-primary"></i>
+            <h4 data-i18n="phone_title">Telefone</h4>
+            <p class="mb-0" data-i18n="phone_text">+244 123 456 789</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="about-card h-100 p-4 text-center">
+            <i class="fas fa-envelope fa-4x mb-3 text-primary"></i>
+            <h4 data-i18n="email_title">Email</h4>
+            <p class="mb-0" data-i18n="email_text">contacto@ispcan.ao</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="about-card h-100 p-4 text-center">
+            <i class="fas fa-globe fa-4x mb-3 text-primary"></i>
+            <h4 data-i18n="website_title">Website</h4>
+            <p class="mb-0" data-i18n="website_text">www.ispcan.ao</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORMULÁRIO DE CONTACTO -->
+  <section class="py-5 bg-light" id="formulario">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="form_title">Envie-nos uma mensagem</h2>
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="contact-form">
+            <form id="contactForm">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label" data-i18n="form_name">Nome</label>
+                  <input type="text" class="form-control" id="contactName" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" data-i18n="form_email">Email</label>
+                  <input type="email" class="form-control" id="contactEmail" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" data-i18n="form_phone">Telefone</label>
+                  <input type="text" class="form-control" id="contactPhone">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" data-i18n="form_subject">Assunto</label>
+                  <select class="form-select" id="contactSubject">
+                    <option value="geral" data-i18n="subject_geral">Informações gerais</option>
+                    <option value="admissoes" data-i18n="subject_admissoes">Admissões</option>
+                    <option value="cursos" data-i18n="subject_cursos">Cursos</option>
+                    <option value="secretaria" data-i18n="subject_secretaria">Secretaria académica</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label" data-i18n="form_message">Mensagem</label>
+                  <textarea class="form-control" id="contactMessage" rows="5" required></textarea>
+                </div>
+                <div class="col-12 text-center">
+                  <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn"><i class="fas fa-paper-plane me-2"></i><span data-i18n="form_send">Enviar mensagem</span></button>
+                  <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-2"><i class="fas fa-undo me-2"></i><span data-i18n="form_clear">Limpar</span></button>
+                </div>
+                <div class="col-12" id="formFeedback"></div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTOS POR DEPARTAMENTO -->
+  <section class="py-5" id="departamentos">
+    <div class="container">
+      <h2 class="text-center mb-4 fw-bold" data-i18n="dept_title">Contactos por Departamento</h2>
+      <!-- Filtros -->
+      <div class="d-flex justify-content-center gap-2 mb-5 flex-wrap">
+        <button class="btn btn-outline-primary filter-btn active" data-filter="all">Todos</button>
+        <button class="btn btn-outline-primary filter-btn" data-filter="eng">Engenharias</button>
+        <button class="btn btn-outline-primary filter-btn" data-filter="saude">Saúde</button>
+        <button class="btn btn-outline-primary filter-btn" data-filter="soc">Ciências Sociais</button>
+      </div>
+      <div class="row g-4" id="deptContainer">
+        <div class="col-lg-3 col-md-6 dept-member" data-category="eng">
+          <div class="dept-card">
+            <i class="fas fa-laptop-code"></i>
+            <h5>Engenharia Informática</h5>
+            <p class="mb-1"><i class="fas fa-envelope me-1"></i> eng.informatica@ispcan.ao</p>
+            <p><i class="fas fa-phone me-1"></i> +244 123 456 001</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 dept-member" data-category="eng">
+          <div class="dept-card">
+            <i class="fas fa-hard-hat"></i>
+            <h5>Engenharia Civil</h5>
+            <p class="mb-1"><i class="fas fa-envelope me-1"></i> eng.civil@ispcan.ao</p>
+            <p><i class="fas fa-phone me-1"></i> +244 123 456 002</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 dept-member" data-category="saude">
+          <div class="dept-card">
+            <i class="fas fa-user-nurse"></i>
+            <h5>Enfermagem</h5>
+            <p class="mb-1"><i class="fas fa-envelope me-1"></i> enfermagem@ispcan.ao</p>
+            <p><i class="fas fa-phone me-1"></i> +244 123 456 003</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 dept-member" data-category="saude">
+          <div class="dept-card">
+            <i class="fas fa-heartbeat"></i>
+            <h5>Fisioterapia</h5>
+            <p class="mb-1"><i class="fas fa-envelope me-1"></i> fisioterapia@ispcan.ao</p>
+            <p><i class="fas fa-phone me-1"></i> +244 123 456 004</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 dept-member" data-category="soc">
+          <div class="dept-card">
+            <i class="fas fa-gavel"></i>
+            <h5>Direito</h5>
+            <p class="mb-1"><i class="fas fa-envelope me-1"></i> direito@ispcan.ao</p>
+            <p><i class="fas fa-phone me-1"></i> +244 123 456 005</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 dept-member" data-category="soc">
+          <div class="dept-card">
+            <i class="fas fa-chart-line"></i>
+            <h5>Economia</h5>
+            <p class="mb-1"><i class="fas fa-envelope me-1"></i> economia@ispcan.ao</p>
+            <p><i class="fas fa-phone me-1"></i> +244 123 456 006</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 dept-member" data-category="all">
+          <div class="dept-card">
+            <i class="fas fa-building"></i>
+            <h5>Secretaria Académica</h5>
+            <p class="mb-1"><i class="fas fa-envelope me-1"></i> secretaria@ispcan.ao</p>
+            <p><i class="fas fa-phone me-1"></i> +244 123 456 007</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 dept-member" data-category="all">
+          <div class="dept-card">
+            <i class="fas fa-headset"></i>
+            <h5>Apoio ao Estudante</h5>
+            <p class="mb-1"><i class="fas fa-envelope me-1"></i> apoio.estudante@ispcan.ao</p>
+            <p><i class="fas fa-phone me-1"></i> +244 123 456 008</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAPA GRANDE (Leaflet) -->
+  <section class="py-5 bg-light" id="mapa">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="map_title">Localização do Campus</h2>
+      <div id="mapLarge"></div>
+      <div class="mt-3 text-center">
+        <a href="https://maps.google.com/?q=Av.+Universitária,+1000,+Malanje,+Angola" target="_blank" class="btn btn-outline-primary"><i class="fas fa-directions me-2"></i><span data-i18n="map_directions">Como chegar</span></a>
+      </div>
+      <div class="row mt-4 g-3 text-center">
+        <div class="col-md-4"><i class="fas fa-map-location text-primary me-1"></i> <span data-i18n="map_eng">Departamento de Engenharia</span></div>
+        <div class="col-md-4"><i class="fas fa-map-location text-primary me-1"></i> <span data-i18n="map_library">Biblioteca Central</span></div>
+        <div class="col-md-4"><i class="fas fa-map-location text-primary me-1"></i> <span data-i18n="map_reitoria">Reitoria</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REDES SOCIAIS -->
+  <section class="py-5">
+    <div class="container text-center">
+      <h2 class="mb-5 fw-bold" data-i18n="social_title">Siga-nos nas redes sociais</h2>
+      <div class="d-flex justify-content-center flex-wrap">
+        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-youtube" ></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-x-twitter"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHATBOT FLUTUANTE (agora abre janela de chat) -->
+  <div class="chatbot-btn" id="chatbotBtn">
+    <!-- Removido o link para chatbot.html -->
+    <img class="robot" src="images/IA-ISP.png" alt="Chatbot" />
+  </div>
+
+  <!-- Janela do Chatbot (agora ativa) -->
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <i class="fas fa-robot"></i> Assistente Virtual
+      <button class="btn-close btn-close-white ms-auto" id="closeChat" aria-label="Close"></button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="bot-msg">Olá! Sou o assistente do ISPCAN. Posso ajudar com informações sobre cursos, inscrições ou eventos?</div>
+      <div class="user-msg">Quero saber sobre bolsas de estudo</div>
+      <div class="bot-msg">Temos bolsas de mérito, monitoria e parcerias com empresas. Qual o seu curso de interesse?</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" placeholder="Digite sua mensagem..." id="chatInput">
+      <button id="sendMsg"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- BOTÃO VOLTAR AO TOPO (corrigido) -->
+  <button class="back-to-top" id="backToTop" title="Voltar ao topo">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <!-- RODAPÉ -->
+  <footer class="bg-dark text-white pt-5 pb-4">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <h5><img src="images/ISPCAN-rbg.png" style="border-radius: 50px; width: 30px; height: 30px;" alt=""> ISPCAN-Malanje</h5>
+          <p data-i18n="footer_about">Excelência em ensino, pesquisa e extensão há mais de 50 anos. Transformando vidas pelo conhecimento.</p>
+        </div>
+        <div class="col-md-2">
+          <h6 data-i18n="quick_links">Links rápidos</h6>
+          <ul class="list-unstyled">
+            <li><a href="sobre.html" class="text-white-50 text-decoration-none" data-i18n="about">Sobre</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="library">Biblioteca</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="student_portal">Portal do aluno</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="jobs">Trabalhe connosco</a></li>
+          </ul>
+        </div>
+        <div class="col-md-3">
+          <h6 data-i18n="contact">Contacto</h6>
+          <p class="text-white-50"><i class="fas fa-phone me-2"></i>+244 123 456 789</p>
+          <p class="text-white-50"><i class="fas fa-envelope me-2"></i>contacto@ispcan.ao</p>
+          <p class="text-white-50"><i class="fas fa-clock me-2"></i>Seg-Sex: 8h às 20h</p>
+        </div>
+        <div class="col-md-3">
+          <h6 data-i18n="location">Localização</h6>
+          <div class="card location-card">
+            <div id="map"></div>
+            <div class="card-body p-2 small text-white">
+              <i class="fas fa-map-location text-primary me-1"></i> Av. Universitária, 1000, Malanje, Angola<br>
+              <i class="fas fa-phone me-1"></i> +244 123 456 789<br>
+              <a href="https://maps.google.com/?q=Av.+Universitária,+1000,+Malanje,+Angola" target="_blank" class="text-white-50 text-decoration-none">
+                <i class="fas fa-external-link-alt me-1"></i>Ver no Google Maps
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr class="my-4 bg-secondary">
+      <div class="text-center text-white-50">
+        <small>© 2025 ISPCAN-Malanje. Todos os direitos reservados. Desenvolvido Por: <span class="m-lg-1" style="color: blue"><b>António Laurindo Paulo</b></span></small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function() {
+      // ----- TEMA -----
+      const themeToggle = document.getElementById('themeToggle');
+      const currentTheme = localStorage.getItem('theme') || 'light';
+      document.body.setAttribute('data-bs-theme', currentTheme);
+      themeToggle.checked = (currentTheme === 'dark');
+      themeToggle.addEventListener('change', function() {
+        let theme = this.checked ? 'dark' : 'light';
+        document.body.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+      });
+
+      // ----- FILTRO DEPARTAMENTOS -----
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const deptMembers = document.querySelectorAll('.dept-member');
+      
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          const filter = this.getAttribute('data-filter');
+          
+          deptMembers.forEach(member => {
+            const cat = member.getAttribute('data-category');
+            if (filter === 'all' || cat === filter || cat === 'all') {
+              member.style.display = 'block';
+            } else {
+              member.style.display = 'none';
+            }
+          });
+        });
+      });
+
+      // ----- TRADUÇÃO (i18n) -----
+      const translations = {
+        pt: {
+          contact_hero_title: ' Contacte-nos',
+          contact_hero_subtitle: 'Estamos disponíveis para responder às suas dúvidas sobre cursos, admissões, serviços académicos e apoio ao estudante.',
+          quick_send: 'Enviar mensagem',
+          quick_location: 'Ver localização',
+          quick_chat: 'Falar com o chatbot',
+          contact_info_title: 'Informações de Contacto',
+          address_title: 'Endereço',
+          address_text: 'Instituto Superior Politécnico<br>Rua da Educação, Malanje – Angola',
+          phone_title: 'Telefone',
+          phone_text: '+244 123 456 789',
+          email_title: 'Email',
+          email_text: 'contacto@ispcan.ao',
+          website_title: 'Website',
+          website_text: 'www.ispcan.ao',
+          form_title: 'Envie-nos uma mensagem',
+          form_name: 'Nome',
+          form_email: 'Email',
+          form_phone: 'Telefone',
+          form_subject: 'Assunto',
+          subject_geral: 'Informações gerais',
+          subject_admissoes: 'Admissões',
+          subject_cursos: 'Cursos',
+          subject_secretaria: 'Secretaria académica',
+          form_message: 'Mensagem',
+          form_send: 'Enviar mensagem',
+          form_clear: 'Limpar',
+          dept_title: 'Contactos por Departamento',
+          map_title: 'Localização do Campus',
+          map_directions: 'Como chegar',
+          map_eng: 'Departamento de Engenharia',
+          map_library: 'Biblioteca Central',
+          map_reitoria: 'Reitoria',
+          social_title: 'Siga-nos nas redes sociais',
+          footer_about: 'Excelência em ensino, pesquisa e extensão há mais de 50 anos. Transformando vidas pelo conhecimento.',
+          quick_links: 'Links rápidos',
+          about: 'Sobre',
+          library: 'Biblioteca',
+          student_portal: 'Portal do aluno',
+          jobs: 'Trabalhe connosco',
+          contact: 'Contacto',
+          location: 'Localização'
+        },
+        en: {
+          contact_hero_title: ' Contact Us',
+          contact_hero_subtitle: 'We are available to answer your questions about courses, admissions, academic services and student support.',
+          quick_send: 'Send message',
+          quick_location: 'View location',
+          quick_chat: 'Chat with bot',
+          contact_info_title: 'Contact Information',
+          address_title: 'Address',
+          address_text: 'Polytechnic Institute<br>Education Street, Malanje – Angola',
+          phone_title: 'Phone',
+          phone_text: '+244 123 456 789',
+          email_title: 'Email',
+          email_text: 'contact@ispcan.ao',
+          website_title: 'Website',
+          website_text: 'www.ispcan.ao',
+          form_title: 'Send us a message',
+          form_name: 'Name',
+          form_email: 'Email',
+          form_phone: 'Phone',
+          form_subject: 'Subject',
+          subject_geral: 'General information',
+          subject_admissoes: 'Admissions',
+          subject_cursos: 'Courses',
+          subject_secretaria: 'Academic secretariat',
+          form_message: 'Message',
+          form_send: 'Send message',
+          form_clear: 'Clear',
+          dept_title: 'Department Contacts',
+          map_title: 'Campus Location',
+          map_directions: 'Get directions',
+          map_eng: 'Engineering Department',
+          map_library: 'Central Library',
+          map_reitoria: 'Rectorate',
+          social_title: 'Follow us on social media',
+          footer_about: 'Excellence in teaching, research and extension for over 50 years. Transforming lives through knowledge.',
+          quick_links: 'Quick links',
+          about: 'About',
+          library: 'Library',
+          student_portal: 'Student portal',
+          jobs: 'Work with us',
+          contact: 'Contact',
+          location: 'Location'
+        },
+        es: {
+          contact_hero_title: ' Contáctenos',
+          contact_hero_subtitle: 'Estamos disponibles para responder a sus dudas sobre cursos, admisiones, servicios académicos y apoyo al estudiante.',
+          quick_send: 'Enviar mensaje',
+          quick_location: 'Ver ubicación',
+          quick_chat: 'Hablar con chatbot',
+          contact_info_title: 'Información de Contacto',
+          address_title: 'Dirección',
+          address_text: 'Instituto Superior Politécnico<br>Calle de la Educación, Malanje – Angola',
+          phone_title: 'Teléfono',
+          phone_text: '+244 123 456 789',
+          email_title: 'Email',
+          email_text: 'contacto@ispcan.ao',
+          website_title: 'Sitio web',
+          website_text: 'www.ispcan.ao',
+          form_title: 'Envíenos un mensaje',
+          form_name: 'Nombre',
+          form_email: 'Email',
+          form_phone: 'Teléfono',
+          form_subject: 'Asunto',
+          subject_geral: 'Información general',
+          subject_admissoes: 'Admisiones',
+          subject_cursos: 'Cursos',
+          subject_secretaria: 'Secretaría académica',
+          form_message: 'Mensaje',
+          form_send: 'Enviar mensaje',
+          form_clear: 'Limpiar',
+          dept_title: 'Contactos por Departamento',
+          map_title: 'Ubicación del Campus',
+          map_directions: 'Cómo llegar',
+          map_eng: 'Departamento de Ingeniería',
+          map_library: 'Biblioteca Central',
+          map_reitoria: 'Rectorado',
+          social_title: 'Síganos en redes sociales',
+          footer_about: 'Excelencia en docencia, investigación y extensión por más de 50 años. Transformando vidas a través del conocimiento.',
+          quick_links: 'Enlaces rápidos',
+          about: 'Sobre',
+          library: 'Biblioteca',
+          student_portal: 'Portal del alumno',
+          jobs: 'Trabaja con nosotros',
+          contact: 'Contacto',
+          location: 'Ubicación'
+        }
+      };
+
+      function setLanguage(lang) {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (translations[lang] && translations[lang][key]) {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+              el.placeholder = translations[lang][key];
+            } else if (el.tagName === 'OPTION') {
+              el.textContent = translations[lang][key];
+            } else {
+              el.innerHTML = translations[lang][key];
+            }
+          }
+        });
+        localStorage.setItem('preferredLang', lang);
+      }
+
+      const savedLang = localStorage.getItem('preferredLang') || 'pt';
+      setLanguage(savedLang);
+
+      document.querySelectorAll('[data-lang]').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const lang = e.target.closest('[data-lang]').getAttribute('data-lang');
+          setLanguage(lang);
+        });
+      });
+
+      // ----- FORMULÁRIO DE CONTACTO -----
+      const contactForm = document.getElementById('contactForm');
+      const formFeedback = document.getElementById('formFeedback');
+      contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('contactName').value.trim();
+        const email = document.getElementById('contactEmail').value.trim();
+        const message = document.getElementById('contactMessage').value.trim();
+        if (!name || !email || !message) {
+          formFeedback.innerHTML = '<div class="alert alert-warning">Por favor, preencha todos os campos obrigatórios.</div>';
+          return;
+        }
+        if (!/^\S+@\S+\.\S+$/.test(email)) {
+          formFeedback.innerHTML = '<div class="alert alert-warning">Por favor, insira um e-mail válido.</div>';
+          return;
+        }
+        formFeedback.innerHTML = '<div class="alert alert-success">✓ Mensagem enviada com sucesso! Entraremos em contacto em breve.</div>';
+        contactForm.reset();
+      });
+
+      // ----- CHATBOT (agora funcional) -----
+      const chatbotBtn = document.getElementById('chatbotBtn');
+      const chatWindow = document.getElementById('chatWindow');
+      const closeChat = document.getElementById('closeChat');
+      const sendBtn = document.getElementById('sendMsg');
+      const chatInput = document.getElementById('chatInput');
+      const chatBody = document.getElementById('chatBody');
+      const quickChat = document.getElementById('quickChat');
+
+      function openChat() {
+        chatWindow.style.display = 'block';
+      }
+      function closeChatFunc() {
+        chatWindow.style.display = 'none';
+      }
+
+      chatbotBtn.addEventListener('click', openChat);
+      if (quickChat) {
+        quickChat.addEventListener('click', (e) => { 
+          e.preventDefault(); 
+          openChat(); 
+        });
+      }
+
+      closeChat.addEventListener('click', closeChatFunc);
+
+      function sendMessage() {
+        const msg = chatInput.value.trim();
+        if (msg === '') return;
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-msg';
+        userDiv.textContent = msg;
+        chatBody.appendChild(userDiv);
+        chatInput.value = '';
+        setTimeout(() => {
+          const botDiv = document.createElement('div');
+          botDiv.className = 'bot-msg';
+          botDiv.textContent = 'Obrigado pela mensagem! Um atendente do ISPCAN responderá em breve.';
+          chatBody.appendChild(botDiv);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }, 500);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+
+      sendBtn.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+
+      window.addEventListener('click', (e) => {
+        if (!chatbotBtn.contains(e.target) && !chatWindow.contains(e.target) && chatWindow.style.display === 'block') {
+          closeChatFunc();
+        }
+      });
+
+      // ----- BACK TO TOP -----
+      const backToTop = document.getElementById('backToTop');
+      window.addEventListener('scroll', () => {
+        backToTop.classList.toggle('show', window.scrollY > 300);
+      });
+      backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // ----- MAPAS LEAFLET -----
+      // Coordenadas do campus (ajuste se necessário)
+      const campusLat = -9.5515;
+      const campusLng = 16.3408;
+
+      // Mapa grande (seção "Localização do Campus")
+      const mapLarge = L.map('mapLarge').setView([campusLat, campusLng], 15);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(mapLarge);
+
+      // Marcadores no mapa grande
+      L.marker([campusLat, campusLng]).addTo(mapLarge)
+        .bindPopup('Reitoria - ISPCAN-Malanje')
+        .openPopup();
+      L.marker([campusLat - 0.0015, campusLng + 0.0012]).addTo(mapLarge)
+        .bindPopup('Departamento de Engenharia');
+      L.marker([campusLat + 0.001, campusLng - 0.0018]).addTo(mapLarge)
+        .bindPopup('Biblioteca Central');
+
+      // Mapa pequeno (rodapé)
+      const mapSmall = L.map('map').setView([campusLat, campusLng], 13);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(mapSmall);
+      L.marker([campusLat, campusLng]).addTo(mapSmall)
+        .bindPopup('ISPCAN-Malanje');
+    })();
+  </script>
+</body>
+</html>

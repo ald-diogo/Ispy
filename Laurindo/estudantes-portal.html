@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISPCAN · Portal Académico</title>
+  <!-- Bootstrap 5 + Ícones + Font Awesome (para alguns ícones extras) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Ajustes personalizados para o layout */
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      transition: background-color 0.3s, color 0.2s;
+      overflow-x: hidden;
+    }
+    .wrapper {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+    #sidebar {
+      min-width: 260px;
+      max-width: 260px;
+      background: var(--bs-body-bg);
+      border-right: 1px solid var(--bs-border-color);
+      transition: all 0.25s;
+      box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    }
+    #sidebar .nav-link {
+      color: var(--bs-body-color);
+      border-radius: 0.5rem;
+      margin: 0.2rem 0.5rem;
+      padding: 0.6rem 1rem;
+      font-weight: 500;
+    }
+    #sidebar .nav-link:hover {
+      background-color: var(--bs-tertiary-bg);
+    }
+    #sidebar .nav-link.active {
+      background-color: var(--bs-primary);
+      color: white !important;
+    }
+    #sidebar .nav-link i {
+      margin-right: 10px;
+      width: 1.5rem;
+      text-align: center;
+    }
+    #content {
+      flex: 1;
+      padding: 20px 25px;
+      background-color: var(--bs-tertiary-bg);
+      transition: background-color 0.3s;
+    }
+    .navbar-top {
+      background-color: var(--bs-body-bg);
+      border-bottom: 1px solid var(--bs-border-color);
+      padding: 0.75rem 1.5rem;
+    }
+    .avatar-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background-color: var(--bs-secondary-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: var(--bs-body-color);
+      border: 2px solid var(--bs-primary);
+    }
+    /* card estatístico */
+    .stats-card {
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 1rem;
+      padding: 1.2rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      height: 100%;
+    }
+    .stats-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+    }
+    /* mapa responsivo */
+    .map-container {
+      overflow: hidden;
+      border-radius: 1rem;
+      border: 1px solid var(--bs-border-color);
+      background: var(--bs-body-bg);
+    }
+    .map-container iframe {
+      width: 100%;
+      height: 220px;
+      border: 0;
+      display: block;
+    }
+    /* chatbot flutuante */
+    .chatbot-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--bs-primary);
+      color: white;
+      border: none;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1050;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    .chatbot-btn:hover {
+      background-color: var(--bs-primary-darker, #0b5ed7);
+      transform: scale(1.05);
+    }
+    .chatbot-panel {
+      position: fixed;
+      bottom: 100px;
+      right: 25px;
+      width: 320px;
+      max-width: calc(100% - 50px);
+      background-color: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 1.2rem;
+      box-shadow: 0 1rem 2rem rgba(0,0,0,0.2);
+      z-index: 1049;
+      display: none;
+      overflow: hidden;
+    }
+    .chatbot-header {
+      background-color: var(--bs-primary);
+      color: white;
+      padding: 12px 16px;
+      font-weight: 600;
+    }
+    .chatbot-body {
+      padding: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+      background-color: var(--bs-tertiary-bg);
+    }
+    .chatbot-footer {
+      padding: 10px;
+      border-top: 1px solid var(--bs-border-color);
+      background: var(--bs-body-bg);
+    }
+    /* notificações */
+    .badge-notif {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      font-size: 0.6rem;
+      padding: 0.2rem 0.4rem;
+    }
+    /* idioma dropdown */
+    .lang-icon {
+      width: 22px;
+      margin-right: 6px;
+    }
+    /* responsividade */
+    @media (max-width: 768px) {
+      #sidebar {
+        min-width: 0;
+        max-width: 70px;
+      }
+      #sidebar .nav-link span {
+        display: none;
+      }
+      #sidebar .nav-link i {
+        margin-right: 0;
+        font-size: 1.2rem;
+      }
+      #sidebar .logo-text {
+        display: none;
+      }
+      #content {
+        padding: 15px;
+      }
+    }
+    /* tema claro/escuro transição suave */
+    .transition-theme {
+      transition: background-color 0.3s, border-color 0.2s, color 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navbar (fixa) -->
+  <nav class="navbar-top d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-3">
+      <i class="bi bi-mortarboard-fill fs-2 text-primary"></i>
+      <span class="fw-bold fs-5 d-none d-sm-inline"><span class="text-primary">ISPCAN</span> · Portal Académico</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <!-- Barra de pesquisa (exemplo) -->
+      <div class="input-group input-group-sm d-none d-md-flex" style="width: 240px;">
+        <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control border-start-0" placeholder="Pesquisar...">
+      </div>
+      <!-- Ícone notificações -->
+      <div class="position-relative">
+        <i class="bi bi-bell fs-5" role="button"></i>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-notif">3</span>
+      </div>
+      <!-- Seletor de Idioma (🌐) -->
+      <div class="dropdown">
+        <button class="btn btn-sm border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-globe2 fs-5"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="#"><img src="https://flagcdn.com/w20/pt.png" class="lang-icon" alt="pt"> Português</a></li>
+          <li><a class="dropdown-item" href="#"><img src="https://flagcdn.com/w20/gb.png" class="lang-icon" alt="en"> English</a></li>
+          <li><a class="dropdown-item" href="#"><img src="https://flagcdn.com/w20/fr.png" class="lang-icon" alt="fr"> Français</a></li>
+        </ul>
+      </div>
+      <!-- Alternador de Tema (🌙/☀️) -->
+      <button class="btn btn-sm border-0" id="themeToggle">
+        <i class="bi bi-sun-fill fs-5" id="themeIcon"></i>
+      </button>
+      <!-- Perfil / Avatar -->
+      <div class="dropdown">
+        <div class="avatar-icon" role="button" data-bs-toggle="dropdown">
+          <span>AN</span>
+        </div>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><h6 class="dropdown-header">António Ngola</h6></li>
+          <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle me-2"></i>Meu Perfil</a></li>
+          <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Configurações</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="p-2">
+      <div class="sidebar-header text-center py-3">
+        <i class="bi bi-mortarboard-fill fs-1 text-primary"></i>
+        <div class="logo-text fw-semibold mt-1 small">ISPCAN</div>
+      </div>
+      <hr class="my-1">
+      <ul class="nav flex-column">
+        <li class="nav-item"><a href="#" class="nav-link active"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-book"></i><span>Disciplinas</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-pencil-square"></i><span>Notas</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-calendar-week"></i><span>Horários</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-cash-stack"></i><span>Propinas</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-files"></i><span>Documentos</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-megaphone"></i><span>Comunicados</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-headset"></i><span>Suporte</span></a></li>
+      </ul>
+    </nav>
+
+    <!-- Conteúdo principal -->
+    <div id="content">
+      <!-- Saudação e cards rápidos -->
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <h4 class="fw-semibold"><i class="bi bi-hand-index-thumb me-2"></i>Bem-vindo, António 👋</h4>
+        <div class="text-muted"><i class="bi bi-calendar2-event me-1"></i>06 Março 2026</div>
+      </div>
+
+      <!-- Cards de estatísticas -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+          <div class="stats-card d-flex align-items-center">
+            <i class="bi bi-journal-bookmark-fill fs-1 text-primary me-3"></i>
+            <div>
+              <div class="text-muted small">Disciplinas</div>
+              <div class="fs-4 fw-bold">6</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="stats-card d-flex align-items-center">
+            <i class="bi bi-file-text-fill fs-1 text-success me-3"></i>
+            <div>
+              <div class="text-muted small">Notas lançadas</div>
+              <div class="fs-4 fw-bold">12</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="stats-card d-flex align-items-center">
+            <i class="bi bi-cash-coin fs-1 text-warning me-3"></i>
+            <div>
+              <div class="text-muted small">Propinas (mês)</div>
+              <div class="fs-4 fw-bold">15.500 Kz</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="stats-card d-flex align-items-center">
+            <i class="bi bi-envelope-paper-fill fs-1 text-info me-3"></i>
+            <div>
+              <div class="text-muted small">Comunicados</div>
+              <div class="fs-4 fw-bold">3 novos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linha com duas colunas: mapa e próximos eventos -->
+      <div class="row g-3 mb-4">
+        <div class="col-lg-7">
+          <div class="stats-card p-0 overflow-hidden">
+            <div class="p-3 border-bottom bg-opacity-10 d-flex align-items-center">
+              <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+              <span class="fw-semibold">Campus Principal – Malanje</span>
+            </div>
+            <!-- Google Maps incorporado (localização aproximada: ISPCAN, Malanje) -->
+            <div class="map-container">
+              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d25214.221609888168!2d16.3315179!3d-9.5446179!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1a4fcfd2d3c1b2b1%3A0x5b5b5b5b5b5b5b5b!2sMalanje%2C%20Angola!5e0!3m2!1spt-PT!2spt!4v1710000000000!5m2!1spt-PT!2spt" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+            <div class="p-2 small text-muted d-flex gap-3">
+              <span><i class="bi bi-pin-map-fill"></i> Secretaria, Biblioteca, Cantina</span>
+              <span><i class="bi bi-geo"></i> Ver mapa completo</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="stats-card">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-calendar2-check me-2"></i>Próximos eventos</h6>
+            <ul class="list-unstyled">
+              <li class="d-flex mb-3">
+                <div class="bg-primary bg-opacity-10 rounded text-center px-3 py-1 me-3">
+                  <div class="small fw-bold">15</div>
+                  <div class="small">MAR</div>
+                </div>
+                <div><span class="fw-semibold">Entrega de notas</span><br><small class="text-muted">Prazo final para lançamento</small></div>
+              </li>
+              <li class="d-flex mb-3">
+                <div class="bg-success bg-opacity-10 rounded text-center px-3 py-1 me-3">
+                  <div class="small fw-bold">20</div>
+                  <div class="small">MAR</div>
+                </div>
+                <div><span class="fw-semibold">Matrícula online</span><br><small class="text-muted">2º semestre abre</small></div>
+              </li>
+              <li class="d-flex">
+                <div class="bg-warning bg-opacity-10 rounded text-center px-3 py-1 me-3">
+                  <div class="small fw-bold">25</div>
+                  <div class="small">MAR</div>
+                </div>
+                <div><span class="fw-semibold">Defesa de TCC</span><br><small class="text-muted">Engenharia Informática</small></div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disciplinas recentes / quick links -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="stats-card">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-journal-code me-2"></i>Minhas disciplinas (2026)</h6>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge bg-primary bg-opacity-25 text-primary-emphasis px-3 py-2">Programação Web</span>
+              <span class="badge bg-success bg-opacity-25 text-success-emphasis px-3 py-2">Base de Dados</span>
+              <span class="badge bg-info bg-opacity-25 text-info-emphasis px-3 py-2">Redes</span>
+              <span class="badge bg-warning bg-opacity-25 text-warning-emphasis px-3 py-2">Segurança</span>
+              <span class="badge bg-secondary bg-opacity-25 text-secondary-emphasis px-3 py-2">Inteligência Artificial</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="stats-card">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-megaphone me-2"></i>Últimos comunicados</h6>
+            <ul class="list-unstyled small">
+              <li><i class="bi bi-dot"></i> <span class="fw-semibold">Novo horário da biblioteca</span> – 04/03</li>
+              <li><i class="bi bi-dot"></i> <span class="fw-semibold">Bolsa de mérito 2026</span> – inscrições abertas</li>
+              <li><i class="bi bi-dot"></i> <span class="fw-semibold">Manutenção do portal</span> (domingo, 02h-04h)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão Chatbot flutuante -->
+  <button class="chatbot-btn" id="chatbotBtn">
+    <i class="bi bi-chat-dots-fill"></i>
+  </button>
+
+  <!-- Painel do chatbot (inicialmente oculto) -->
+  <div class="chatbot-panel" id="chatbotPanel">
+    <div class="chatbot-header d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-robot me-2"></i>Assistente ISPCAN</span>
+      <i class="bi bi-x-lg" role="button" id="closeChat" style="cursor:pointer;"></i>
+    </div>
+    <div class="chatbot-body" id="chatMessages">
+      <div class="mb-2"><span class="badge bg-secondary">Bot</span> Olá! Como posso ajudar?</div>
+      <div class="mb-2 text-end"><span class="badge bg-primary">Tu</span> Ver horário</div>
+      <div><span class="badge bg-secondary">Bot</span> Aqui está o seu horário: Segunda 8h-10h (Programação Web)...</div>
+    </div>
+    <div class="chatbot-footer d-flex">
+      <input type="text" class="form-control form-control-sm me-2" placeholder="Escreva..." id="chatInput">
+      <button class="btn btn-sm btn-primary" id="sendChat"><i class="bi bi-send"></i></button>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS (necessário para dropdowns, etc.) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function() {
+      // Alternador de tema (claro/escuro) usando data-bs-theme
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+      const html = document.documentElement;
+
+      function updateThemeIcon(theme) {
+        if (theme === 'dark') {
+          themeIcon.classList.remove('bi-sun-fill');
+          themeIcon.classList.add('bi-moon-fill');
+        } else {
+          themeIcon.classList.remove('bi-moon-fill');
+          themeIcon.classList.add('bi-sun-fill');
+        }
+      }
+
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = html.getAttribute('data-bs-theme') || 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-bs-theme', newTheme);
+        updateThemeIcon(newTheme);
+        // Guardar preferência (localStorage)
+        localStorage.setItem('theme', newTheme);
+      });
+
+      // Carregar tema guardado
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      html.setAttribute('data-bs-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+
+      // Chatbot flutuante
+      const chatbotBtn = document.getElementById('chatbotBtn');
+      const chatbotPanel = document.getElementById('chatbotPanel');
+      const closeChat = document.getElementById('closeChat');
+
+      function toggleChat(show) {
+        if (show === undefined) {
+          chatbotPanel.style.display = chatbotPanel.style.display === 'block' ? 'none' : 'block';
+        } else {
+          chatbotPanel.style.display = show ? 'block' : 'none';
+        }
+      }
+
+      chatbotBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleChat();
+      });
+
+      closeChat.addEventListener('click', () => {
+        toggleChat(false);
+      });
+
+      // Fechar ao clicar fora (opcional)
+      document.addEventListener('click', (e) => {
+        if (!chatbotPanel.contains(e.target) && !chatbotBtn.contains(e.target)) {
+          toggleChat(false);
+        }
+      });
+
+      // Simular envio de mensagem
+      const sendBtn = document.getElementById('sendChat');
+      const chatInput = document.getElementById('chatInput');
+      const chatMessages = document.getElementById('chatMessages');
+
+      sendBtn.addEventListener('click', () => {
+        const msg = chatInput.value.trim();
+        if (msg === '') return;
+        // Adiciona mensagem do utilizador
+        const userDiv = document.createElement('div');
+        userDiv.className = 'mb-2 text-end';
+        userDiv.innerHTML = '<span class="badge bg-primary">Tu</span> ' + msg;
+        chatMessages.appendChild(userDiv);
+        chatInput.value = '';
+
+        // Resposta automática simples
+        setTimeout(() => {
+          const botDiv = document.createElement('div');
+          botDiv.className = 'mb-2';
+          botDiv.innerHTML = '<span class="badge bg-secondary">Bot</span> Recebi a sua pergunta. Em breve responderei.';
+          chatMessages.appendChild(botDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 600);
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          sendBtn.click();
+        }
+      });
+
+      // Inicializar dropdowns do Bootstrap (garantir)
+      var dropdowns = document.querySelectorAll('.dropdown-toggle');
+      dropdowns.forEach(dropdown => {
+        new bootstrap.Dropdown(dropdown);
+      });
+
+      // Simples funcionalidade de pesquisa (não funcional, só estética)
+      console.log('Portal ISPCAN carregado com sucesso!');
+    })();
+  </script>
+  <!-- Opcional: pequeno ajuste para bandeiras (se as imagens falharem, fica texto) -->
+</body>
+</html>

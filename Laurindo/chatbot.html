@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistente IA · ISPCAN</title>
+  <!-- Bootstrap 5 + ícones -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Variáveis de tema (dark por padrão) */
+    :root {
+      --glass-bg: rgba(10, 20, 40, 0.5);
+      --glass-border: rgba(255,255,255,0.1);
+      --glass-sidebar-bg: rgba(5, 15, 30, 0.5);
+      --glass-header-bg: rgba(0, 8, 20, 0.6);
+      --glass-input-bg: rgba(20, 30, 50, 0.5);
+      --text-primary: #ffffff;
+      --text-muted: rgba(255,255,255,0.7);
+      --user-msg-bg: rgba(0, 153, 255, 0.25);
+      --bot-msg-bg: rgba(40, 40, 60, 0.5);
+      --accent: #0dcaf0;
+      --suggestion-bg: rgba(255,255,255,0.1);
+      --footer-link: rgba(255,255,255,0.6);
+    }
+
+    body.light-theme {
+      --glass-bg: rgba(220, 230, 245, 0.5);
+      --glass-border: rgba(0,0,0,0.1);
+      --glass-sidebar-bg: rgba(240, 245, 255, 0.6);
+      --glass-header-bg: rgba(240, 245, 255, 0.7);
+      --glass-input-bg: rgba(255, 255, 255, 0.6);
+      --text-primary: #0a1e2f;
+      --text-muted: rgba(0,0,0,0.6);
+      --user-msg-bg: rgba(0, 120, 212, 0.15);
+      --bot-msg-bg: rgba(200, 210, 230, 0.6);
+      --accent: #0a7e9c;
+      --suggestion-bg: rgba(0,0,0,0.05);
+      --footer-link: rgba(0,0,0,0.5);
+    }
+
+    /* RESET & GERAL */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text-primary); transition: color 0.2s, background-color 0.2s; }
+
+    /* IMAGEM DE FUNDO TECNOLÓGICA + OVERLAY (mantidas) */
+    .bg-tech {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url('images/IA-ISP.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: brightness(0.5) blur(2px);
+      z-index: -2;
+    }
+    .overlay-tech {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -1;
+    }
+
+    /* EFEITO GLASS com variáveis */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    .glass-sidebar {
+      background: var(--glass-sidebar-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-right: 1px solid var(--glass-border);
+    }
+    .glass-header {
+      background: var(--glass-header-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .glass-input {
+      background: var(--glass-input-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+    }
+    .glass-input:focus {
+      background: rgba(30, 40, 60, 0.7);
+      border-color: rgba(0, 180, 255, 0.5);
+      box-shadow: 0 0 0 3px rgba(0, 180, 255, 0.2);
+      color: var(--text-primary);
+    }
+
+    /* LAYOUT PRINCIPAL */
+    #wrapper {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* BARRA LATERAL COLAPSÍVEL */
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      transition: width 0.25s ease, min-width 0.25s ease;
+      overflow-x: hidden;
+    }
+    .sidebar.collapsed {
+      width: 0;
+      min-width: 0;
+      padding: 0 !important;
+      border: none;
+    }
+    .sidebar-item {
+      padding: 10px 16px;
+      margin: 4px 8px;
+      border-radius: 12px;
+      color: var(--text-muted);
+      transition: 0.2s;
+      cursor: default;
+      white-space: nowrap;
+    }
+    .sidebar-item i { width: 24px; margin-right: 12px; font-size: 1.2rem; }
+    .sidebar-item:hover {
+      background: rgba(255,255,255,0.15);
+      color: var(--text-primary);
+    }
+    .history-item {
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ÁREA DE CHAT */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 1rem;
+      scroll-behavior: smooth;
+    }
+    .message {
+      max-width: 75%;
+      margin-bottom: 1.2rem;
+      padding: 12px 18px;
+      border-radius: 24px;
+      line-height: 1.5;
+      word-wrap: break-word;
+      animation: fadeInUp 0.3s ease;
+    }
+    .message.user {
+      background: var(--user-msg-bg);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0, 180, 255, 0.4);
+      color: var(--text-primary);
+      align-self: flex-end;
+      border-bottom-right-radius: 6px;
+    }
+    .message.bot {
+      background: var(--bot-msg-bg);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      align-self: flex-start;
+      border-bottom-left-radius: 6px;
+    }
+    .message.bot i { margin-right: 6px; color: var(--accent); }
+
+    /* SUGESTÕES */
+    .suggestion-chip {
+      background: var(--suggestion-bg);
+      backdrop-filter: blur(5px);
+      border: 1px solid var(--glass-border);
+      border-radius: 40px;
+      padding: 8px 20px;
+      color: var(--text-primary);
+      font-weight: 500;
+      transition: 0.2s;
+      cursor: pointer;
+      margin: 0 6px 8px 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .suggestion-chip:hover {
+      background: rgba(0, 153, 255, 0.3);
+      border-color: var(--accent);
+      transform: scale(1.02);
+    }
+
+    /* ANIMAÇÕES */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      padding: 15px 20px;
+      background: var(--bot-msg-bg);
+      backdrop-filter: blur(8px);
+      border-radius: 30px;
+      width: fit-content;
+      margin-bottom: 1rem;
+    }
+    .typing-indicator span {
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: blink 1.4s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-5px); }
+    }
+
+    /* BOTÕES DE TEMA E COLAPSO */
+    .theme-switch, .collapse-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+    }
+    .theme-switch:hover, .collapse-btn:hover {
+      background: rgba(255,255,255,0.2);
+      color: var(--accent);
+    }
+    .collapse-btn { font-size: 1.4rem; margin-right: 8px; }
+
+    /* SCROLL */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
+    /* FOOTER */
+    .footer-links a { color: var(--footer-link); text-decoration: none; margin-right: 1.2rem; font-size: 0.85rem; }
+    .footer-links a:hover { color: var(--accent); }
+
+    /* IMAGENS (mantidas) */
+    .logo { width: 50px; height: 50px; border-radius: 50px; }
+    .robot { width: 50px; height: 50px; border-radius: 50px; }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- fundo com imagem e overlay (exactamente como no original) -->
+  <div class="bg-tech"></div>
+  <div class="overlay-tech"></div>
+
+  <div id="wrapper">
+    <!-- cabeçalho glass com botões de colapso e tema -->
+    <nav class="navbar navbar-dark glass-header px-3 py-2">
+      <div class="container-fluid">
+        <div class="d-flex align-items-center">
+          <button class="collapse-btn" id="toggleSidebarBtn" title="Compactar/expandir menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <span class="navbar-brand mb-0 h1">
+            <img class="robot" src="images/IA-ISP.png" /> ISP-Y <span style="font-size: 0.8rem; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 30px; margin-left: 10px;">beta</span>
+          </span>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="index.html">
+            <button class="btn btn-outline-danger rounded-pill px-3 py-2"> 
+              <i class="fas fa-door-open"></i>       
+          </button>
+          </a>
+          <button class="theme-switch" id="themeToggle" title="Alternar tema">
+            <i class="fas fa-moon"></i>
+          </button>
+          
+        </div>
+      </div>
+    </nav>
+
+    <!-- linha principal: sidebar + chat -->
+    <div class="d-flex flex-grow-1 overflow-hidden">
+      <!-- barra lateral (colapsável) -->
+      <div class="sidebar glass-sidebar p-2" id="sidebar">
+        <div class="d-flex flex-column h-100">
+          <button class="btn btn-outline-info rounded-pill mb-3 mt-2" id="newChatBtn" style="border-color: rgba(255,255,255,0.3); color: var(--text-primary);">
+            <i class="fas fa-plus me-2"></i> Nova conversa
+          </button>
+          <div class="sidebar-item"><i class="fas fa-history"></i> Histórico</div>
+          <div class="history-item sidebar-item"><i class="far fa-circle"></i> Cursos de engenharia</div>
+          <div class="history-item sidebar-item"><i class="far fa-circle"></i> Calendário 2025</div>
+          <div class="history-item sidebar-item"><i class="far fa-circle"></i> Inscrição online</div>
+          <div class="history-item sidebar-item"><i class="far fa-circle"></i> Departamentos</div>
+          <hr class="bg-white opacity-25">
+          <div class="sidebar-item"><i class="fas fa-brain"></i> Mapa mental da IA</div>
+          <div class="sidebar-item"><i class="fas fa-user"></i> Criador: António L. Paulo</div>
+          <div class="mt-auto small text-white-50 p-3">
+            <img src="images/ISPCAN-rbg.png" class="logo"/> ISPCAN<br>Malanje
+          </div>
+        </div>
+      </div>
+
+      <!-- área principal de chat -->
+      <div class="chat-container">
+        <!-- mensagens -->
+        <div class="messages-area d-flex flex-column" id="messageArea">
+          <!-- mensagem inicial do bot (será gerada via JS para manter histórico) -->
+        </div>
+
+        <!-- área de input -->
+        <div class="p-3" style="background: transparent;">
+          <div class="d-flex gap-2 align-items-center glass-input rounded-pill px-3 py-1">
+            <i class="fas fa-paperclip text-white-50"></i>
+            <input type="text" class="form-control bg-transparent border-0 text-white" placeholder="Pergunte sobre o ISPCAN, cursos, criador..." id="userInput" style="box-shadow: none; outline: none; color: var(--text-primary) !important;">
+            <i class="fas fa-microphone text-white-50 me-2"></i>
+            <button class="btn btn-link text-info p-0" id="sendBtn"><i class="fas fa-paper-plane fs-5"></i></button>
+          </div>
+          <!-- rodapé -->
+          <div class="footer-links text-center mt-2">
+            <a href="#">Sobre a IA</a>
+            <a href="#">Contacto</a>
+            <a href="#">ISPCAN</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function() {
+      // Elementos
+      const messageArea = document.getElementById('messageArea');
+      const userInput = document.getElementById('userInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const newChatBtn = document.getElementById('newChatBtn');
+      const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+      const sidebar = document.getElementById('sidebar');
+      const themeToggle = document.getElementById('themeToggle');
+
+      // Estado e memória
+      let messages = JSON.parse(localStorage.getItem('ispcChatHistory')) || [];
+      let typingTimer = null;
+
+      // Conhecimento expandido da IA (ISPCAN + criador)
+      const botReplies = {
+        // Engenharia e Tecnologia (agora com perfis detalhados)
+        engenharia: '**Departamento de Engenharia e Tecnologia**\n\n' +
+                    '• **Engenharia Informática** – Perfil de saída: desenvolvedor de software, arquiteto de sistemas, especialista em inteligência artificial, administrador de redes e segurança informática.\n' +
+                    '• **Engenharia Electrónica e Telecomunicações** – Perfil de saída: projetista de circuitos eletrónicos, engenheiro de redes móveis e satélite, especialista em sistemas de comunicação e fibra óptica.\n' +
+                    '• **Engenharia Agronómica** – Perfil de saída: gestor de produção agrícola, consultor em sustentabilidade, especialista em solos e recursos naturais, tecnólogo pós-colheita.\n' + 
+                    '• **Engenharia de Construção Civil** – Perfil de saída: engenheiro de estruturas, gestor de obras, especialista em materiais de construção, projetista de infraestruturas.\n\n' +
+                    'Deseja saber mais sobre algum curso específico?',
+
+        // Saúde (agora com perfis)
+        saude: '**Departamento de Ciências da Saúde**\n\n' +
+               '• **Enfermagem** – Perfil de saída: enfermeiro generalista, gestor de serviços de saúde, educador em saúde, especialista em cuidados críticos.\n' +
+               '• **Fisioterapia** – Perfil de saída: fisioterapeuta em reabilitação, desportivo, neurológico, geriátrico; consultor em ergonomia.\n' +
+               '• **Psicologia** – Perfis de saída: clínico (psicoterapia), escolar (orientação educacional), criminal (perícia forense), organizacional (gestão de pessoas).\n\n' +
+               'Deseja saber mais sobre algum curso específico?',
+
+        // Sociais (agora com perfis)
+        sociais: '**Departamento de Ciências Sociais e Humanas**\n\n' +
+                 '• **Direito** – Perfil de saída: advogado, juiz, procurador, consultor jurídico, docente universitário.\n' +
+                 '• **Economia** – Perfil de saída: analista económico, consultor financeiro, gestor de políticas públicas, investigador.\n' +
+                 '• **Gestão de Recursos Humanos (GRH)** – Perfil de saída: gestor de talentos, recrutador, formador, analista de desenvolvimento organizacional.\n' +
+                 '• **Contabilidade** – Perfil de saída: contabilista certificado, auditor, consultor fiscal, controller financeiro.\n\n' +
+                 'Deseja saber mais sobre algum curso específico?',
+
+        // Novos departamentos com cursos e perfis
+        educacao: '**Departamento de Educação e Letras**\n\n' +
+                  '• **Educação** – Perfil de saída: professor dos ensinos básico e secundário, pedagogo, coordenador educacional, especialista em currículo.\n' +
+                  '• **Letras** – Perfil de saída: professor de línguas, tradutor, revisor, redator, consultor linguístico.\n\n' +
+                  'Deseja saber mais sobre algum curso específico?',
+
+        empresariais: '**Departamento de Ciências Económicas e Empresariais** (além de Economia e GRH já listados, oferece também):\n' +
+                      '• **Gestão** – Perfil de saída: gestor de empresas, empreendedor, consultor de negócios, analista de projetos.\n' +
+                      '• **Marketing** – Perfil de saída: especialista em marketing digital, gestor de marcas, analista de mercado.\n\n' +
+                      'Consulte também os cursos de Economia e GRH.',
+
+        // Cursos específicos com perfis detalhados (para consultas diretas)
+        engenharia_informatica: '**Engenharia Informática**\nPerfil de saída: O graduado estará apto a desenvolver software (aplicações, sistemas web, mobile), projetar e administrar redes de computadores, atuar em segurança da informação, inteligência artificial e ciência de dados, além de gerir projetos tecnológicos.',
+        engenharia_electronica: '**Engenharia Electrónica e Telecomunicações**\nPerfil de saída: O profissional formado pode atuar no projeto de circuitos eletrónicos, sistemas de comunicação (rádio, TV, satélite), redes móveis (4G/5G), fibra óptica, automação e Internet das Coisas.',
+        engenharia_agronomica: '**Engenharia Agronómica**\nPerfil de saída: O engenheiro agrónomo está habilitado a gerenciar propriedades rurais, desenvolver técnicas de produção vegetal sustentável, atuar em consultoria agrícola, controlo de qualidade de alimentos e gestão de recursos naturais.',
+        engenharia_construcao: '**Engenharia de Construção Civil**\nPerfil de saída: O egresso poderá projetar estruturas (edifícios, pontes, barragens), gerenciar obras, especificar materiais, atuar em planeamento urbano e fiscalização de projetos.',
+        enfermagem: '**Enfermagem**\nPerfil de saída: O enfermeiro pode trabalhar em hospitais, clínicas, atenção básica, gestão de serviços de saúde, docência, investigação e cuidados intensivos. Habilidades: assistência integral ao paciente, administração de medicamentos, educação em saúde.',
+        fisioterapia: '**Fisioterapia**\nPerfil de saída: Atua na prevenção e reabilitação de disfunções musculoesqueléticas, neurológicas e respiratórias; em desporto, geriatria, ergonomia; pode trabalhar em clínicas, hospitais, equipas desportivas e docência.',
+        psicologia: '**Psicologia**\nPerfis de saída:\n• Clínico: psicoterapia individual, casal, família.\n• Escolar: orientação vocacional, apoio pedagógico.\n• Criminal: perícia, avaliação psicológica forense.\n• Organizacional: recrutamento, treinamento, clima organizacional.',
+        direito: '**Direito**\nPerfil de saída: O bacharel pode seguir carreira jurídica (advocacia, magistratura, ministério público), consultoria, docência, ou atuar em departamentos jurídicos de empresas, com habilidades em argumentação, legislação e mediação.',
+        economia: '**Economia**\nPerfil de saída: O economista analisa cenários macro e microeconómicos, elabora pareceres financeiros, atua em consultoria, planeamento governamental, mercado financeiro e investigação académica.',
+        grh: '**Gestão de Recursos Humanos (GRH)**\nPerfil de saída: Profissional capaz de recrutar e selecionar talentos, gerir carreiras, administrar benefícios, promover treinamento e desenvolvimento, e assessorar a liderança em clima organizacional.',
+        contabilidade: '**Contabilidade**\nPerfil de saída: O contabilista pode atuar como perito contábil, auditor, consultor fiscal, controller, ou em departamentos contábeis de empresas, dominando normas internacionais e legislação tributária.',
+        educacao_curso: '**Educação**\nPerfil de saída: O pedagogo ou licenciado em Educação pode lecionar no ensino básico, coordenar projetos pedagógicos, atuar em supervisão escolar, desenvolvimento de currículos e formação de professores.',
+        letras: '**Letras**\nPerfil de saída: O profissional de Letras pode atuar como professor de língua portuguesa e/ou estrangeira, tradutor, intérprete, revisor de textos, redator, e consultor linguístico em empresas e editoras.',
+        gestao: '**Gestão**\nPerfil de saída: O gestor está preparado para administrar negócios, empreender, coordenar equipas, elaborar planos de negócio, analisar mercados e liderar processos organizacionais.',
+        marketing: '**Marketing**\nPerfil de saída: Especialista em estratégias de mercado, marketing digital, gestão de marcas, pesquisa de mercado, publicidade e relacionamento com clientes.',
+
+        // Outras respostas (mantidas iguais)
+        inscrição: 'As inscrições para o ISPCAN são feitas online no site oficial (www.ispcan.ac.ao) ou presencialmente na secretaria. Normalmente abrem em agosto e fevereiro. Documentos: certidão, BI, foto, pagamento de taxa.',
+        calendário: 'Calendário Académico 2025 (previsão):\n1º semestre: 10/02 a 30/05\n2º semestre: 10/08 a 30/11\nExames: Junho/Julho e Dezembro\nFérias: Páscoa (1 semana) e Natal (20/12 a 05/01).',
+        departamentos: 'Departamentos do ISPCAN:\n• Engenharia e Tecnologia\n• Ciências Sociais e Humanas\n• Ciências Económicas e Empresariais\n• Ciências da Saúde\n• Educação e Letras',
+        campus: 'O campus do ISPCAN fica em Malanje, Bairro Catepa. Temos biblioteca, laboratórios, residências e cantina.',
+        criador: 'Fui criado por António Laurindo Paulo, um desenvolvedor e académico comprometido com a inovação no Instituto Superior Politécnico Cardeal Dom Alexandre do Nascimento (ISPCAN). O meu desenvolvimento teve como foco auxiliar estudantes e docentes.',
+        finalidade: 'Sou um assistente virtual académico do ISPCAN-Malanje. A minha missão é fornecer informações sobre cursos, inscrições, eventos, calendários, corpo docente, e ajudar na localização de serviços. Também posso falar sobre o meu criador e o meu “mapa mental”.',
+        mentalMap: 'O meu mapa mental baseia‑se numa arquitetura de regras e conhecimento estruturado sobre o ISPCAN. Inclui dados dos departamentos, perfis de saída, contactos, e uma base histórica de perguntas frequentes. Fui treinado com informações oficiais da universidade.',
+        ispcan: 'O Instituto Superior Politécnico Cardeal Dom Alexandre do Nascimento (ISPCAN) localiza-se em Malanje. Oferece cursos de licenciatura em Engenharia Informática, Telecomunicações, Eletrotécnica, Gestão, Enfermagem, entre outros. A instituição preza pela formação ética e técnica.',
+        contacto: 'Secretaria ISPCAN: secretaria@ispcan.ac.ao | +244 999 000 000. Campus: Malanje, Bairro Catepa.',
+        default: 'Ainda estou a aprender sobre esse tópico. Pode perguntar sobre cursos, inscrições, calendário, departamentos, criador, finalidade ou mapa mental.'
+      };
+
+      // Função para obter resposta baseada em palavras-chave
+      function getBotReply(userMsg) {
+        const lower = userMsg.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // remove acentos
+
+        // --- Verificações de cursos específicos (para perfis detalhados) ---
+        if (lower.includes('engenharia informatica') || lower.includes('engenharia informática')) return botReplies.engenharia_informatica;
+        if (lower.includes('engenharia electronica') || lower.includes('engenharia eletronica') || lower.includes('telecomunicacoes')) return botReplies.engenharia_electronica;
+        if (lower.includes('engenharia agronomica') || lower.includes('engenharia agronómica')) return botReplies.engenharia_agronomica;
+        if (lower.includes('engenharia de construcao') || lower.includes('engenharia de construção') || lower.includes('construcao civil')) return botReplies.engenharia_construcao;
+        if (lower.includes('enfermagem')) return botReplies.enfermagem;
+        if (lower.includes('fisioterapia')) return botReplies.fisioterapia;
+        if (lower.includes('psicologia')) return botReplies.psicologia;
+        if (lower.includes('direito')) return botReplies.direito;
+        if (lower.includes('economia')) return botReplies.economia;
+        if (lower.includes('gestao de recursos humanos') || lower.includes('grh')) return botReplies.grh;
+        if (lower.includes('contabilidade')) return botReplies.contabilidade;
+        if (lower.includes('educacao') && !lower.includes('educacao fisica') && !lower.includes('educacao infantil')) return botReplies.educacao_curso;
+        if (lower.includes('letras')) return botReplies.letras;
+        if (lower.includes('gestao') && !lower.includes('gestao de recursos humanos')) return botReplies.gestao;
+        if (lower.includes('marketing')) return botReplies.marketing;
+
+        // --- Verificações genéricas (mantidas e expandidas) ---
+        if (lower.includes('criador') || lower.includes('quem te criou')) return botReplies.criador;
+        if (lower.includes('finalidade') || lower.includes('para que serves') || lower.includes('tua função')) return botReplies.finalidade;
+        if (lower.includes('mapa mental') || lower.includes('como funciona')) return botReplies.mentalMap;
+        if (lower.includes('ispcan') && (lower.includes('que é') || lower.includes('o que é'))) return botReplies.ispcan;
+        if (lower.includes('curso') || lower.includes('engenharia') || lower.includes('licenciatura')) return botReplies.engenharia; // Note: engenharia cobre todos, mas podemos melhorar
+        if (lower.includes('inscrição') || lower.includes('inscrever') || lower.includes('matrícula')) return botReplies.inscrição;
+        if (lower.includes('calendário') || lower.includes('férias') || lower.includes('semestre')) return botReplies.calendário;
+        if (lower.includes('departamento')) return botReplies.departamentos;
+        if (lower.includes('campus') || lower.includes('localização') || lower.includes('onde fica')) return botReplies.campus;
+        if (lower.includes('contacto') || lower.includes('telefone') || lower.includes('secretaria')) return botReplies.contacto;
+        if (lower.includes('educacao') || lower.includes('letras')) return botReplies.educacao;
+        if (lower.includes('empresariais') || lower.includes('economicas')) return botReplies.empresariais;
+        if (lower.includes('obrigado') || lower.includes('valeu')) return 'Por nada! Estou aqui para ajudar. 😊';
+        
+        return botReplies.default;
+      }
+
+      // Adicionar mensagem ao DOM e guardar
+      function addMessageToChat(sender, text, save = true) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', sender);
+        if (sender === 'bot') {
+          msgDiv.innerHTML = `<img class="robot" src="images/IA-ISP.png" /> ${text.replace(/\n/g, '<br>')}`;
+        } else {
+          msgDiv.innerText = text;
+        }
+        messageArea.appendChild(msgDiv);
+        if (save) {
+          messages.push({ sender, text });
+          localStorage.setItem('ispcChatHistory', JSON.stringify(messages));
+        }
+        scrollToBottom();
+      }
+
+      function scrollToBottom() {
+        messageArea.scrollTop = messageArea.scrollHeight;
+      }
+
+      function removeTypingIndicator() {
+        const typingDiv = document.querySelector('.typing-indicator');
+        if (typingDiv) typingDiv.remove();
+      }
+
+      function showTypingIndicator() {
+        removeTypingIndicator();
+        const typing = document.createElement('div');
+        typing.className = 'typing-indicator';
+        typing.innerHTML = '<span></span><span></span><span></span>';
+        messageArea.appendChild(typing);
+        scrollToBottom();
+      }
+
+      function sendBotResponse(userMessage) {
+        const reply = getBotReply(userMessage);
+        typingTimer = setTimeout(() => {
+          removeTypingIndicator();
+          addMessageToChat('bot', reply);
+        }, 1200);
+      }
+
+      function handleUserMessage(messageText) {
+        if (!messageText.trim()) return;
+        addMessageToChat('user', messageText);
+        userInput.value = '';
+        if (typingTimer) clearTimeout(typingTimer);
+        showTypingIndicator();
+        sendBotResponse(messageText);
+      }
+
+      // Carregar histórico ou mensagem inicial
+      function loadHistory() {
+        messageArea.innerHTML = '';
+        if (messages.length === 0) {
+          addMessageToChat('bot', 'Olá! Sou o assistente virtual do **ISP-Y (Integrated Semantic Processor – Yielding)**. Que em Português significa Processador Semântico Integrado – Produtivo. Posso ajudar com informações sobre cursos (com perfis de saída detalhados), inscrições, calendário, departamentos, e também falar sobre o meu criador, António Laurindo Paulo. O que deseja saber?', true);
+          addSuggestionChips();
+        } else {
+          messages.forEach(m => addMessageToChat(m.sender, m.text, false));
+          if (!document.querySelector('.suggestion-chip')) addSuggestionChips();
+        }
+      }
+
+      // Criar chips de sugestão (mais opções)
+      function addSuggestionChips() {
+        const chipContainer = document.createElement('div');
+        chipContainer.className = 'd-flex flex-wrap mt-2 mb-4';
+        chipContainer.id = 'suggestionChips';
+        chipContainer.innerHTML = `
+          <span class="suggestion-chip" data-question="Quais cursos o ISPCAN oferece?"><i class="fas fa-graduation-cap"></i> Cursos</span>
+          <span class="suggestion-chip" data-question="Como faço inscrição no ISPCAN?"><i class="fas fa-pen"></i> Inscrição</span>
+          <span class="suggestion-chip" data-question="Qual o calendário académico?"><i class="far fa-calendar-alt"></i> Calendário</span>
+          <span class="suggestion-chip" data-question="Quem é o criador da IA?"><i class="fas fa-user"></i> Criador</span>
+          <span class="suggestion-chip" data-question="Qual a finalidade desta IA?"><i class="fas fa-robot"></i> Finalidade</span>
+          <span class="suggestion-chip" data-question="Mostra o mapa mental da IA"><i class="fas fa-brain"></i> Mapa mental</span>
+          <span class="suggestion-chip" data-question="Contacto da secretaria"><i class="fas fa-phone"></i> Contacto</span>
+          <span class="suggestion-chip" data-question="Departamentos do ISPCAN"><i class="fas fa-building"></i> Departamentos</span>
+          <span class="suggestion-chip" data-question="Onde fica o campus?"><i class="fas fa-map-location"></i> Localização</span>
+          <span class="suggestion-chip" data-question="Perfil de Engenharia Informática"><i class="fas fa-laptop-code"></i> Perfil Eng. Informática</span>
+        `;
+        messageArea.appendChild(chipContainer);
+        document.querySelectorAll('#suggestionChips .suggestion-chip').forEach(chip => {
+          chip.addEventListener('click', () => {
+            const question = chip.getAttribute('data-question');
+            if (question) handleUserMessage(question);
+          });
+        });
+      }
+
+      // Eventos
+      sendBtn.addEventListener('click', () => handleUserMessage(userInput.value));
+      userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleUserMessage(userInput.value); });
+
+      newChatBtn.addEventListener('click', () => {
+        localStorage.removeItem('ispcChatHistory');
+        messages = [];
+        messageArea.innerHTML = '';
+        addMessageToChat('bot', 'Olá! Sou o assistente virtual do **ISP-Y (Integrated Semantic Processor – Yielding)**. Que em Português significa Processador Semântico Integrado – Produtivo. Posso ajudar com informações sobre cursos (com perfis de saída detalhados), inscrições, calendário, departamentos, e também falar sobre o meu criador, António Laurindo Paulo. O que deseja saber?', true);
+        addSuggestionChips();
+        if (typingTimer) clearTimeout(typingTimer);
+        removeTypingIndicator();
+      });
+
+      // Colapsar sidebar
+      toggleSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        const icon = toggleSidebarBtn.querySelector('i');
+        icon.classList.toggle('fa-bars');
+        icon.classList.toggle('fa-chevron-right');
+      });
+
+      // Alternar tema (interruptor)
+      themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-theme');
+        const icon = themeToggle.querySelector('i');
+        if (document.body.classList.contains('light-theme')) {
+          icon.classList.remove('fa-moon');
+          icon.classList.add('fa-sun');
+        } else {
+          icon.classList.remove('fa-sun');
+          icon.classList.add('fa-moon');
+        }
+      });
+
+      // Inicializar
+      loadHistory();
+    })();
+  </script>
+</body>
+</html>

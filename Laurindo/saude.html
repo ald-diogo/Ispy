@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saúde | ISPCAN-Malanje</title>
+  <!-- Bootstrap 5.3 + Ícones + Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Leaflet (mapa interativo) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    /* ----- Variáveis e reset suave (mesmos do original) ----- */
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.15);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --hero-overlay: linear-gradient(135deg, rgba(0, 51, 102, 0.8) 0%, rgba(0, 153, 204, 0.7) 100%);
+      --card-hover: translateY(-10px) scale(1.02);
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body {
+      transition: background-color 0.3s, color 0.2s;
+    }
+    /* --- Efeito glass no header --- */
+    .navbar-modern {
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      background-color: var(--glass-bg) !important;
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    /* --- Hero com imagem de fundo real e overlay --- */
+    .hero-section {
+      background: url('images/ISPCAN-BG.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: white;
+      padding: 150px 0 120px;
+      margin-top: -1px;
+      position: relative;
+    }
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      /*background: var(--hero-overlay);*/
+      z-index: 0;
+    }
+    .hero-section .container {
+      position: relative;
+      z-index: 1;
+    }
+    /* --- Cards flat com animação --- */
+    .course-card, .lab-card, .project-card, .stat-card {
+      border: none;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 15px 30px -12px rgba(0,0,0,0.2);
+      transition: var(--transition-smooth);
+      overflow: hidden;
+    }
+    [data-bs-theme="dark"] .course-card,
+    [data-bs-theme="dark"] .lab-card,
+    [data-bs-theme="dark"] .project-card,
+    [data-bs-theme="dark"] .stat-card {
+      background: rgba(30, 30, 40, 0.8);
+      box-shadow: 0 15px 30px -12px rgba(0,150,255,0.15);
+    }
+    .course-card:hover, .lab-card:hover, .project-card:hover {
+      transform: var(--card-hover);
+      box-shadow: 0 25px 40px -15px rgba(0,120,200,0.4);
+    }
+    .course-card i, .lab-card i, .project-card i {
+      color: #0d6efd;
+      transition: transform 0.2s;
+    }
+    .course-card:hover i, .lab-card:hover i, .project-card:hover i {
+      transform: scale(1.1);
+    }
+    /* --- Sobre cards --- */
+    .about-card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 2rem 1rem;
+      text-align: center;
+      color: white;
+    }
+    [data-bs-theme="dark"] .about-card {
+      background: rgba(0,0,0,0.3);
+      border-color: rgba(255,255,255,0.1);
+    }
+    .about-card i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #ffc107;
+    }
+    /* --- Estatísticas --- */
+    .stat-card {
+      background: white;
+      padding: 2rem;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #0d6efd;
+      line-height: 1.2;
+    }
+    [data-bs-theme="dark"] .stat-number {
+      color: #ffc107;
+    }
+    /* --- Botões filtro ativos (não usaremos, mas manter por segurança) --- */
+    .filter-btn.active {
+      background-color: #0d6efd;
+      color: white;
+      border-color: #0d6efd;
+    }
+    /* --- Notícias carrossel adaptado para projetos --- */
+    .carousel-item img {
+      filter: brightness(0.85);
+      transition: filter 0.4s;
+      height: 400px;
+      object-fit: cover;
+    }
+    .carousel-item:hover img {
+      filter: brightness(1);
+    }
+    .news-caption {
+      background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+      border-radius: 0 0 20px 20px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 30px 20px 20px;
+    }
+    /* --- Chatbot flutuante (igual) --- */
+    .chatbot-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      background: #0d6efd;
+      border: none;
+      box-shadow: 0 10px 25px rgba(0,100,255,0.4);
+      font-size: 28px;
+      color: white;
+      cursor: pointer;
+      z-index: 1050;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chatbot-btn:hover {
+      transform: scale(1.1);
+      background: #0b5ed7;
+    }
+    .chatbot-btn img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+    }
+    .chat-window {
+      position: fixed;
+      bottom: 110px;
+      right: 30px;
+      width: 320px;
+      max-width: calc(100% - 60px);
+      background: white;
+      border-radius: 25px 25px 15px 15px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      z-index: 1050;
+      display: none;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    [data-bs-theme="dark"] .chat-window {
+      background: #2d2d3a;
+      color: #eee;
+      border-color: #444;
+    }
+    .chat-header {
+      background: #0d6efd;
+      color: white;
+      padding: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chat-body {
+      padding: 15px;
+      max-height: 250px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bot-msg, .user-msg {
+      padding: 10px 14px;
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .bot-msg {
+      background: #f0f2f5;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+    [data-bs-theme="dark"] .bot-msg {
+      background: #3a3a4a;
+      color: #fff;
+    }
+    .user-msg {
+      background: #0d6efd;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+    .chat-input-area {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
+    }
+    [data-bs-theme="dark"] .chat-input-area {
+      background: #222230;
+      border-color: #444;
+    }
+    .chat-input-area input {
+      flex: 1;
+      border-radius: 30px;
+      border: 1px solid #ccc;
+      padding: 8px 15px;
+      outline: none;
+    }
+    .chat-input-area button {
+      background: transparent;
+      border: none;
+      color: #0d6efd;
+      font-size: 22px;
+      margin-left: 8px;
+    }
+    /* --- Card de localização no rodapé --- */
+    .location-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    /* --- Newsletter --- */
+    .newsletter-section {
+      background-color: #0d6efd;
+      color: white;
+      padding: 60px 0;
+    }
+    [data-bs-theme="dark"] .newsletter-section {
+      background-color: #1a2b3c;
+    }
+    .newsletter-form .input-group {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    /* Ajustes responsivos */
+    @media (max-width: 768px) {
+      .hero-section { padding: 100px 0; background-attachment: scroll; }
+    }
+    /* Ajustes logo */
+    .logo{
+      width: 50px;
+      height: 50px;
+      border-radius: 50px;
+    }
+
+    /* ===== INTERRUPTOR MODERNO DE TEMA ===== */
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+      margin-left: 10px;
+    }
+    .theme-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 24px;
+      width: 24px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+      z-index: 2;
+    }
+    input:checked + .slider {
+      background-color: #0d6efd;
+    }
+    input:checked + .slider:before {
+      transform: translateX(30px);
+    }
+    .slider i {
+      color: #f39c12;
+      font-size: 16px;
+      z-index: 1;
+      transition: 0.4s;
+    }
+    input:checked + .slider i:first-child {
+      opacity: 0.3;
+      color: #fff;
+    }
+    input:checked + .slider i:last-child {
+      opacity: 1;
+      color: #f1c40f;
+    }
+    .slider i:first-child {
+      margin-right: auto;
+    }
+    .slider i:last-child {
+      margin-left: auto;
+      opacity: 0.3;
+    }
+    input:checked + .slider i:last-child {
+      opacity: 1;
+    }
+    input:checked + .slider i:first-child {
+      opacity: 0.3;
+    }
+    /* ===== BOTÃO VOLTAR AO TOPO (CORRIGIDO) ===== */
+    .back-to-top {
+      position: fixed;
+      bottom: 120px; /* Aumentado para evitar sobreposição: 30px (chat) + 65px (altura) + 25px espaçamento */
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #0d6efd;
+      color: white;
+      border: none;
+      box-shadow: 0 5px 15px rgba(0,100,255,0.3);
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1040;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.8);
+    }
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+    .back-to-top:hover {
+      background: #0b5ed7;
+      transform: scale(1.1);
+    }
+    [data-bs-theme="dark"] .back-to-top {
+      background: #2c3e50;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+    
+     .robot {
+      width: 70px; 
+      height: 70px;
+      border-radius: 50px;
+    }
+  </style>
+</head>
+<body data-bs-theme="light">
+  <!-- CABEÇALHO MODERNO -->
+  <nav class="navbar navbar-expand-lg navbar-modern sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3" href="#">
+        <img class="logo" src="images/ISPCAN-rbg.png" /> ISPCAN-Malanje
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-house"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="sobre.html"><i class="fas fa-info-circle"></i> Sobre</a></li>
+           <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="fas fa-book"></i>Cursos</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="saude.html">Engenharias</a></li>
+              <li><a class="dropdown-item" href="ciencias.html">Ciências Sociais</a></li>
+              <li><a class="dropdown-item" href="#">Saúde</a></li>
+            </ul>
+          </li>
+          
+          <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-newspaper"></i>Notícias</a></li>
+          <li class="nav-item"><a class="nav-link" href="contacto.html"><i class="fas fa-envelope"></i> Contacto</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+           <!-- Botões de Login e Cadastrar (outline) -->
+          <a href="login.html" class="btn btn-outline-success">
+            <i class="fas fa-sign-in-alt"></i>
+            Login
+          </a>
+          <a href="#" class="btn btn-outline-primary">
+            <i class="fas fa-user-plus"></i>
+            Cadastrar
+          </a>
+          <!-- Idioma -->
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Idioma">
+              <i class="fas fa-globe"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#" data-lang="pt">🇧🇷 Português</a></li>
+              <li><a class="dropdown-item" href="#" data-lang="en">🇺🇸 English</a></li>
+              <li><a class="dropdown-item" href="#" data-lang="es">🇪🇸 Español</a></li>
+            </ul>
+          </div>
+          <!-- Tema -->
+          <label class="theme-switch">
+            <input type="checkbox" id="themeToggle">
+            <span class="slider">
+              <i class="fas fa-sun"></i>
+              <i class="fas fa-moon"></i>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO da página do departamento -->
+  <section class="hero-section d-flex align-items-center">
+    <div class="container text-center">
+      <h1 class="display-3 fw-bold mb-4" data-i18n="dept_title">Departamento de Saúde</h1>
+      <p class="lead mb-5 w-75 mx-auto" data-i18n="dept_subtitle">O Departamento de Saúde forma profissionais capacitados para promover, prevenir e reabilitar a saúde da comunidade, com excelência técnica e humanismo.</p>
+      <!-- Barra de pesquisa para cursos -->
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <div class="input-group input-group-lg mb-3 shadow-lg rounded-pill overflow-hidden bg-white">
+            <span class="input-group-text bg-white border-0"></span>
+            <input type="text" class="form-control form-control-lg border-0" id="searchInput" placeholder="Buscar cursos..." aria-label="Search">
+            <button class="btn btn-primary px-4" type="button" id="searchButton"><i class="fas fa-search"></i></button>
+          </div>
+          <div class="small text-white-50">
+            <i class="fas fa-map-marker-alt text-danger me-1"></i> Campus Universitário, Malanje, Angola
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO SOBRE O DEPARTAMENTO -->
+  <section class="py-5" id="sobre" style="background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%); color: white;">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="about_title">Sobre o Departamento</h2>
+      <div class="row g-4">
+        <div class="col-md-3">
+          <div class="about-card">
+            <i class="fas fa-heartbeat"></i>
+            <h5 data-i18n="about_innovation">Inovação em Saúde</h5>
+            <p class="small" data-i18n="about_innovation_desc">Pesquisa aplicada em tecnologias para diagnóstico, tratamento e telemedicina.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="about-card">
+            <i class="fas fa-flask"></i>
+            <h5 data-i18n="about_labs">Laboratórios de Simulação</h5>
+            <p class="small" data-i18n="about_labs_desc">Ambientes simulados para práticas clínicas e atendimento humanizado.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="about-card">
+            <i class="fas fa-user-md"></i>
+            <h5 data-i18n="about_professors">Corpo Clínico Especializado</h5>
+            <p class="small" data-i18n="about_professors_desc">Professores com experiência hospitalar e de pesquisa.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="about-card">
+            <i class="fas fa-handshake"></i>
+            <h5 data-i18n="about_partnerships">Parcerias com Hospitais</h5>
+            <p class="small" data-i18n="about_partnerships_desc">Convênios com unidades de saúde para estágios e pesquisa clínica.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO CURSOS (apenas os três do departamento de saúde) -->
+  <section class="py-5" id="cursos">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="courses_title">Cursos do Departamento</h2>
+      <div class="row g-4" id="cardContainer">
+        <!-- Enfermagem -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="saude" data-name="Enfermagem" data-description="Curso que prepara profissionais para o cuidado integral ao paciente, atuando na promoção, prevenção e recuperação da saúde.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-user-nurse fa-4x mb-3 text-success"></i>
+              <h5 class="card-title">Enfermagem</h5>
+              <p class="card-text">Curso que prepara profissionais para o cuidado integral ao paciente, atuando na promoção, prevenção e recuperação da saúde.</p>
+              <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#infoModal">Mais informações</button>
+            </div>
+          </div>
+        </div>
+        <!-- Fisioterapia -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="saude" data-name="Fisioterapia" data-description="Forma especialistas em reabilitação física, atuando na prevenção e tratamento de disfunções do movimento.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-heartbeat fa-4x mb-3 text-danger"></i>
+              <h5 class="card-title">Fisioterapia</h5>
+              <p class="card-text">Forma especialistas em reabilitação física, atuando na prevenção e tratamento de disfunções do movimento.</p>
+              <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#infoModal2">Mais informações</button>
+            </div>
+          </div>
+        </div>
+        <!-- Psicologia -->
+        <div class="col-lg-4 col-md-6 course-item" data-category="saude" data-name="Psicologia" data-description="Curso que aborda o comportamento humano e os processos mentais, com ramificações em diversas áreas.">
+          <div class="card course-card h-100 p-3">
+            <div class="card-body text-center">
+              <i class="fas fa-brain fa-4x mb-3 text-primary"></i>
+              <h5 class="card-title">Psicologia</h5>
+              <p class="card-text">Curso que aborda o comportamento humano e os processos mentais, com ramificações em diversas áreas.</p>
+              <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#infoModal3">Mais informações</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAIS com detalhes dos cursos -->
+  <!-- Modal Enfermagem -->
+  <div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Enfermagem</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h6>🩺 Principais áreas</h6>
+          <ul>
+            <li>Enfermagem Clínica e Cirúrgica</li>
+            <li>Saúde da Família e Comunidade</li>
+            <li>Enfermagem em Urgência e Emergência</li>
+            <li>Enfermagem Obstétrica e Neonatal</li>
+            <li>Gestão em Saúde e Enfermagem</li>
+          </ul>
+          <h6>🎓 Perfil de saída</h6>
+          <p>O graduado poderá atuar como: Enfermeiro generalista, Enfermeiro especialista (após pós-graduação), Gestor de serviços de saúde, Docente, Pesquisador.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal Fisioterapia -->
+  <div class="modal fade" id="infoModal2" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Fisioterapia</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h6>💪 Principais áreas</h6>
+          <ul>
+            <li>Fisioterapia Traumato-Ortopédica</li>
+            <li>Fisioterapia Neurológica</li>
+            <li>Fisioterapia Respiratória</li>
+            <li>Fisioterapia Esportiva</li>
+            <li>Fisioterapia em Saúde da Mulher</li>
+          </ul>
+          <h6>🎓 Perfil de saída</h6>
+          <p>Fisioterapeuta clínico, Especialista em reabilitação, Consultor em saúde, Pesquisador, Docente, Gestor de clínicas e unidades de reabilitação.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal Psicologia (com os ramos) -->
+  <div class="modal fade" id="infoModal3" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Psicologia</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h6>🧠 Ramos da Psicologia</h6>
+          <ul>
+            <li><strong>Psicologia Criminal:</strong> atua na interface com o sistema judiciário, avaliando comportamentos criminosos e auxiliando na reintegração social.</li>
+            <li><strong>Psicologia Clínica:</strong> voltada para o diagnóstico, prevenção e tratamento de transtornos mentais, em consultórios, hospitais e centros de saúde.</li>
+            <li><strong>Psicologia Escolar:</strong> focused on the educational process, helping students, teachers and families with learning and development issues.</li>
+          </ul>
+          <h6>🎓 Perfil de saída</h6>
+          <p>Psicólogo clínico, Psicólogo forense, Psicólogo escolar, Consultor em RH, Pesquisador, Docente.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO LABORATÓRIOS (adaptados para saúde) -->
+  <section class="py-5 bg-light" id="laboratorios">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="labs_title">Laboratórios de Saúde</h2>
+      <div class="row g-4">
+        <div class="col-md-3">
+          <div class="card lab-card h-100 p-3">
+            <img src="https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?q=80&w=2070&auto=format&fit=crop" class="card-img-top rounded-3" style="height: 150px; object-fit: cover;" alt="Simulação Clínica">
+            <div class="card-body text-center">
+              <h5 class="card-title">Simulação Clínica</h5>
+              <p class="card-text small">Manequins de alta fidelidade para treinamento de procedimentos.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card lab-card h-100 p-3">
+            <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2034&auto=format&fit=crop" class="card-img-top rounded-3" style="height: 150px; object-fit: cover;" alt="Anatomia">
+            <div class="card-body text-center">
+              <h5 class="card-title">Anatomia</h5>
+              <p class="card-text small">Modelos anatômicos e peças sintéticas para estudo do corpo humano.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card lab-card h-100 p-3">
+            <img src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=2070&auto=format&fit=crop" class="card-img-top rounded-3" style="height: 150px; object-fit: cover;" alt="Análises Clínicas">
+            <div class="card-body text-center">
+              <h5 class="card-title">Análises Clínicas</h5>
+              <p class="card-text small">Equipamentos para exames laboratoriais e diagnóstico.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card lab-card h-100 p-3">
+            <img src="https://images.unsplash.com/photo-1581092335397-9583eb92d232?q=80&w=2070&auto=format&fit=crop" class="card-img-top rounded-3" style="height: 150px; object-fit: cover;" alt="Reabilitação">
+            <div class="card-body text-center">
+              <h5 class="card-title">Reabilitação</h5>
+              <p class="card-text small">Equipamentos de fisioterapia e terapia ocupacional.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO PROJETOS E INOVAÇÃO (adaptados para saúde) -->
+  <section class="py-5" id="projetos">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="projects_title">Projetos e Inovação em Saúde</h2>
+      <div id="projectsCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#projectsCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#projectsCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#projectsCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner rounded-4 shadow">
+          <div class="carousel-item active">
+            <img src="https://images.unsplash.com/photo-1531746790731-6c087fecd65a?q=80&w=2106&auto=format&fit=crop" class="d-block w-100" alt="Telemedicina">
+            <div class="carousel-caption d-none d-md-block news-caption">
+              <h5>Telemedicina para comunidades rurais</h5>
+              <p>Projeto de extensão que leva atendimento especializado via videoconferência.</p>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <img src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?q=80&w=2070&auto=format&fit=crop" class="d-block w-100" alt="Saúde Comunitária">
+            <div class="carousel-caption d-none d-md-block news-caption">
+              <h5>Programa de Saúde na Escola</h5>
+              <p>Parceria com escolas para promoção de saúde e prevenção de doenças.</p>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <img src="https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?q=80&w=2070&auto=format&fit=crop" class="d-block w-100" alt="Pesquisa em Fisioterapia">
+            <div class="carousel-caption d-none d-md-block news-caption">
+              <h5>Pesquisa em reabilitação pós-AVC</h5>
+              <p>Estudo clínico com novas técnicas de fisioterapia neurológica.</p>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#projectsCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#projectsCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Próximo</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO ESTATÍSTICAS DO DEPARTAMENTO (números ajustados) -->
+  <section class="py-5 bg-primary text-white" id="estatisticas">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="stats_title">Números do Departamento</h2>
+      <div class="row g-4">
+        <div class="col-md-3">
+          <div class="stat-card bg-white text-dark p-4 rounded-4 shadow">
+            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+            <div class="stat-number" data-target="800">0</div>
+            <p class="mb-0" data-i18n="stats_students">Estudantes</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card bg-white text-dark p-4 rounded-4 shadow">
+            <i class="fas fa-chalkboard-teacher fa-3x text-primary mb-3"></i>
+            <div class="stat-number" data-target="50">0</div>
+            <p class="mb-0" data-i18n="stats_professors">Professores</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card bg-white text-dark p-4 rounded-4 shadow">
+            <i class="fas fa-flask fa-3x text-primary mb-3"></i>
+            <div class="stat-number" data-target="8">0</div>
+            <p class="mb-0" data-i18n="stats_labs">Laboratórios</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card bg-white text-dark p-4 rounded-4 shadow">
+            <i class="fas fa-handshake fa-3x text-primary mb-3"></i>
+            <div class="stat-number" data-target="15">0</div>
+            <p class="mb-0" data-i18n="stats_partners">Parcerias</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER (mantida) -->
+  <section class="newsletter-section">
+    <div class="container text-center">
+      <h3 class="fw-bold mb-3" data-i18n="newsletter_title">Assine nossa Newsletter</h3>
+      <p class="mb-4" data-i18n="newsletter_subtitle">Receba novidades, eventos e dicas exclusivas no seu e-mail.</p>
+      <div class="newsletter-form">
+        <div class="input-group input-group-lg">
+          <input type="email" class="form-control" id="newsletterEmail" placeholder="Seu melhor e-mail" aria-label="Email">
+          <button class="btn btn-light" type="button" id="subscribeBtn"><i class="fas fa-paper-plane me-2"></i><span data-i18n="subscribe">Inscrever</span></button>
+        </div>
+        <div id="newsletterFeedback" class="mt-3 small"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHATBOT FLUTUANTE (corrigido) -->
+  <div class="chatbot-btn" id="chatbotBtn">
+    <!-- Removido link para chatbot.html -->
+    <img class="robot" src="images/IA-ISP.png" alt="Chatbot" />
+  </div>
+
+  <!-- Janela do Chatbot (agora ativa) -->
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <i class="fas fa-robot"></i> Assistente Virtual
+      <button class="btn-close btn-close-white ms-auto" id="closeChat" aria-label="Close"></button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="bot-msg">Olá! Sou o assistente do Departamento de Saúde. Posso ajudar com informações sobre cursos, projetos ou eventos?</div>
+      <div class="user-msg">Quero saber sobre o curso de Enfermagem</div>
+      <div class="bot-msg">Claro! O curso de Enfermagem tem duração de 4 anos e inclui estágios em hospitais parceiros. Deseja mais detalhes?</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" placeholder="Digite sua mensagem..." id="chatInput">
+      <button id="sendMsg"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- BOTÃO VOLTAR AO TOPO (corrigido) -->
+  <button class="back-to-top" id="backToTop" title="Voltar ao topo">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <!-- RODAPÉ com mapa -->
+  <footer class="bg-dark text-white pt-5 pb-4" id="contacto">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <h5><img src="images/ISPCAN-rbg.png" style="border-radius: 50px; width: 30px; height: 30px;" /> ISPCAN-Malanje</h5>
+          <p data-i18n="footer_about">Excelência em ensino, pesquisa e extensão. Departamento de Saúde.</p>
+          <div class="d-flex gap-3 fs-4">
+            <a href="#" class="text-primary"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="text-warning"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="text-primary"><i class="fab fa-linkedin"></i></a>
+            <a href="#" class="text-danger"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <h6 data-i18n="quick_links">Links rápidos</h6>
+          <ul class="list-unstyled">
+            <li><a href="#sobre" class="text-white-50 text-decoration-none" data-i18n="about">Sobre</a></li>
+            <li><a href="#cursos" class="text-white-50 text-decoration-none">Cursos</a></li>
+            <li><a href="#laboratorios" class="text-white-50 text-decoration-none">Laboratórios</a></li>
+            <li><a href="#projetos" class="text-white-50 text-decoration-none">Projetos</a></li>
+          </ul>
+        </div>
+        <div class="col-md-3">
+          <h6 data-i18n="contact">Contacto</h6>
+          <p class="text-white-50"><i class="fas fa-phone me-2"></i>+244 123 456 789</p>
+          <p class="text-white-50"><i class="fas fa-envelope me-2"></i>saude@ispcan.edu.ao</p>
+          <p class="text-white-50"><i class="fas fa-clock me-2"></i>Seg-Sex: 8h às 18h</p>
+        </div>
+        <div class="col-md-3">
+          <h6 data-i18n="location">Localização</h6>
+          <div class="card location-card">
+            <div id="map" style="height: 150px; width: 100%;"></div>
+            <div class="card-body p-2 small text-white">
+              <i class="fas fa-map-pin text-primary me-1"></i> Campus Universitário, Malanje, Angola<br>
+              <a href="https://maps.google.com/?q=Malanje+Angola" target="_blank" class="text-white-50 text-decoration-none">
+                <i class="fas fa-external-link-alt me-1"></i>Ver no Google Maps
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr class="my-4 bg-secondary">
+      <div class="text-center text-white-50">
+        <small>© 2025 ISPCAN-Malanje. Desenvolvido por: <span class="m-lg-1" style="color: blue"><b>António Laurindo Paulo</b></span></small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function() {
+      // Tema
+      const themeToggle = document.getElementById('themeToggle');
+      const currentTheme = localStorage.getItem('theme') || 'light';
+      document.body.setAttribute('data-bs-theme', currentTheme);
+      themeToggle.checked = (currentTheme === 'dark');
+      themeToggle.addEventListener('change', function() {
+        let theme = this.checked ? 'dark' : 'light';
+        document.body.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+      });
+
+      // Filtro de cursos pela busca
+      const searchInput = document.getElementById('searchInput');
+      const searchButton = document.getElementById('searchButton');
+      const courseItems = document.querySelectorAll('.course-item');
+
+      function filterCourses() {
+        const term = searchInput.value.toLowerCase().trim();
+        courseItems.forEach(item => {
+          const name = item.getAttribute('data-name')?.toLowerCase() || '';
+          const desc = item.getAttribute('data-description')?.toLowerCase() || '';
+          item.style.display = (name.includes(term) || desc.includes(term) || term === '') ? 'block' : 'none';
+        });
+      }
+      searchInput.addEventListener('input', filterCourses);
+      searchButton.addEventListener('click', filterCourses);
+
+      // Tradução (adaptada para os novos textos)
+      const translations = {
+        pt: {
+          dept_title: 'Departamento de Saúde',
+          dept_subtitle: 'O Departamento de Saúde forma profissionais capacitados para promover, prevenir e reabilitar a saúde da comunidade, com excelência técnica e humanismo.',
+          about_title: 'Sobre o Departamento',
+          about_innovation: 'Inovação em Saúde',
+          about_innovation_desc: 'Pesquisa aplicada em tecnologias para diagnóstico, tratamento e telemedicina.',
+          about_labs: 'Laboratórios de Simulação',
+          about_labs_desc: 'Ambientes simulados para práticas clínicas e atendimento humanizado.',
+          about_professors: 'Corpo Clínico Especializado',
+          about_professors_desc: 'Professores com experiência hospitalar e de pesquisa.',
+          about_partnerships: 'Parcerias com Hospitais',
+          about_partnerships_desc: 'Convênios com unidades de saúde para estágios e pesquisa clínica.',
+          courses_title: 'Cursos do Departamento',
+          labs_title: 'Laboratórios de Saúde',
+          projects_title: 'Projetos e Inovação em Saúde',
+          stats_title: 'Números do Departamento',
+          stats_students: 'Estudantes',
+          stats_professors: 'Professores',
+          stats_labs: 'Laboratórios',
+          stats_partners: 'Parcerias',
+          newsletter_title: 'Assine nossa Newsletter',
+          newsletter_subtitle: 'Receba novidades, eventos e dicas exclusivas no seu e-mail.',
+          subscribe: 'Inscrever',
+          footer_about: 'Excelência em ensino, pesquisa e extensão. Departamento de Saúde.',
+          quick_links: 'Links rápidos',
+          about: 'Sobre',
+          contact: 'Contacto',
+          location: 'Localização'
+        },
+        en: {
+          dept_title: 'Department of Health',
+          dept_subtitle: 'The Department of Health trains professionals capable of promoting, preventing and rehabilitating community health, with technical excellence and humanism.',
+          about_title: 'About the Department',
+          about_innovation: 'Health Innovation',
+          about_innovation_desc: 'Applied research in technologies for diagnosis, treatment and telemedicine.',
+          about_labs: 'Simulation Laboratories',
+          about_labs_desc: 'Simulated environments for clinical practices and humanized care.',
+          about_professors: 'Specialized Clinical Staff',
+          about_professors_desc: 'Professors with hospital and research experience.',
+          about_partnerships: 'Hospital Partnerships',
+          about_partnerships_desc: 'Agreements with health units for internships and clinical research.',
+          courses_title: 'Department Courses',
+          labs_title: 'Health Laboratories',
+          projects_title: 'Projects and Innovation in Health',
+          stats_title: 'Department Numbers',
+          stats_students: 'Students',
+          stats_professors: 'Professors',
+          stats_labs: 'Laboratories',
+          stats_partners: 'Partnerships',
+          newsletter_title: 'Subscribe to our Newsletter',
+          newsletter_subtitle: 'Receive news, events and exclusive tips in your email.',
+          subscribe: 'Subscribe',
+          footer_about: 'Excellence in teaching, research and extension. Department of Health.',
+          quick_links: 'Quick links',
+          about: 'About',
+          contact: 'Contact',
+          location: 'Location'
+        },
+        es: {
+          dept_title: 'Departamento de Salud',
+          dept_subtitle: 'El Departamento de Salud forma profesionales capacitados para promover, prevenir y rehabilitar la salud de la comunidad, con excelencia técnica y humanismo.',
+          about_title: 'Sobre el Departamento',
+          about_innovation: 'Innovación en Salud',
+          about_innovation_desc: 'Investigación aplicada en tecnologías para diagnóstico, tratamiento y telemedicina.',
+          about_labs: 'Laboratorios de Simulación',
+          about_labs_desc: 'Entornos simulados para prácticas clínicas y atención humanizada.',
+          about_professors: 'Personal Clínico Especializado',
+          about_professors_desc: 'Profesores con experiencia hospitalaria y de investigación.',
+          about_partnerships: 'Alianzas con Hospitales',
+          about_partnerships_desc: 'Convenios con unidades de salud para pasantías e investigación clínica.',
+          courses_title: 'Cursos del Departamento',
+          labs_title: 'Laboratorios de Salud',
+          projects_title: 'Proyectos e Innovación en Salud',
+          stats_title: 'Números del Departamento',
+          stats_students: 'Estudiantes',
+          stats_professors: 'Profesores',
+          stats_labs: 'Laboratorios',
+          stats_partners: 'Alianzas',
+          newsletter_title: 'Suscríbete a nuestro Newsletter',
+          newsletter_subtitle: 'Recibe novedades, eventos y consejos exclusivos en tu correo.',
+          subscribe: 'Suscribir',
+          footer_about: 'Excelencia en enseñanza, investigación y extensión. Departamento de Salud.',
+          quick_links: 'Enlaces rápidos',
+          about: 'Sobre',
+          contact: 'Contacto',
+          location: 'Ubicación'
+        }
+      };
+
+      function setLanguage(lang) {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (translations[lang] && translations[lang][key]) {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+              el.placeholder = translations[lang][key];
+            } else {
+              el.textContent = translations[lang][key];
+            }
+          }
+        });
+        localStorage.setItem('preferredLang', lang);
+      }
+
+      const savedLang = localStorage.getItem('preferredLang') || 'pt';
+      setLanguage(savedLang);
+      document.querySelectorAll('[data-lang]').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          setLanguage(e.target.closest('[data-lang]').getAttribute('data-lang'));
+        });
+      });
+
+      // Newsletter
+      const subscribeBtn = document.getElementById('subscribeBtn');
+      const newsletterEmail = document.getElementById('newsletterEmail');
+      const newsletterFeedback = document.getElementById('newsletterFeedback');
+      let subscribers = JSON.parse(localStorage.getItem('newsletter_emails')) || [];
+
+      subscribeBtn.addEventListener('click', () => {
+        const email = newsletterEmail.value.trim();
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+          newsletterFeedback.innerHTML = '<span class="text-warning">Por favor, insira um e-mail válido.</span>';
+          return;
+        }
+        if (subscribers.includes(email)) {
+          newsletterFeedback.innerHTML = '<span class="text-warning">Este e-mail já está inscrito.</span>';
+        } else {
+          subscribers.push(email);
+          localStorage.setItem('newsletter_emails', JSON.stringify(subscribers));
+          newsletterFeedback.innerHTML = '<span class="text-success">✓ Inscrição realizada com sucesso!</span>';
+          newsletterEmail.value = '';
+        }
+      });
+
+      // Chatbot (agora funcional)
+      const chatbotBtn = document.getElementById('chatbotBtn');
+      const chatWindow = document.getElementById('chatWindow');
+      const closeChat = document.getElementById('closeChat');
+      const sendBtn = document.getElementById('sendMsg');
+      const chatInput = document.getElementById('chatInput');
+      const chatBody = document.getElementById('chatBody');
+
+      function openChat() {
+        chatWindow.style.display = 'block';
+      }
+      function closeChatFunc() {
+        chatWindow.style.display = 'none';
+      }
+
+      chatbotBtn.addEventListener('click', openChat);
+      closeChat.addEventListener('click', closeChatFunc);
+
+      function sendMessage() {
+        const msg = chatInput.value.trim();
+        if (msg === '') return;
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-msg';
+        userDiv.textContent = msg;
+        chatBody.appendChild(userDiv);
+        chatInput.value = '';
+        setTimeout(() => {
+          const botDiv = document.createElement('div');
+          botDiv.className = 'bot-msg';
+          botDiv.textContent = 'Obrigado pela mensagem! Um atendente do departamento responderá em breve.';
+          chatBody.appendChild(botDiv);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }, 500);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+
+      sendBtn.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+
+      window.addEventListener('click', (e) => {
+        if (!chatbotBtn.contains(e.target) && !chatWindow.contains(e.target) && chatWindow.style.display === 'block') {
+          closeChatFunc();
+        }
+      });
+
+      // Botão voltar ao topo
+      const backToTop = document.getElementById('backToTop');
+      window.addEventListener('scroll', () => {
+        backToTop.classList.toggle('show', window.scrollY > 300);
+      });
+      backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // Smooth scroll para âncoras
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) target.scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+
+      // Mapa
+      var map = L.map('map').setView([-9.5515, 16.3408], 13);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+      L.marker([-9.5515, 16.3408]).addTo(map).bindPopup('ISPCAN-Malanje<br>Saúde').openPopup();
+
+      // Animação de contadores nas estatísticas
+      const statNumbers = document.querySelectorAll('.stat-number');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            const target = parseInt(el.getAttribute('data-target'));
+            let count = 0;
+            const update = setInterval(() => {
+              if (count < target) {
+                count += Math.ceil(target / 50);
+                if (count > target) count = target;
+                el.textContent = count;
+              } else {
+                clearInterval(update);
+              }
+            }, 20);
+            observer.unobserve(el);
+          }
+        });
+      }, { threshold: 0.5 });
+      statNumbers.forEach(num => observer.observe(num));
+    })();
+  </script>
+</body>
+</html>

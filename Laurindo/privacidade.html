@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Académico · Política de Privacidade</title>
+  <!-- Bootstrap 5 + Ícones + Fonte moderna -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', system-ui, sans-serif; }
+    body {
+      transition: background-color 0.3s ease, color 0.2s;
+      scroll-behavior: smooth;
+      background-color: #f8fafc;
+    }
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    body.dark-mode .card,
+    body.dark-mode .list-group-item,
+    body.dark-mode .sidebar .nav-link,
+    body.dark-mode .bg-light {
+      background-color: #1e1e1e !important;
+      border-color: #333 !important;
+      color: #e0e0e0;
+    }
+    body.dark-mode .text-muted { color: #aaa !important; }
+    body.dark-mode .btn-outline-secondary {
+      border-color: #555;
+      color: #ddd;
+    }
+    body.dark-mode .btn-outline-secondary:hover {
+      background-color: #333;
+    }
+    body.dark-mode .header-overlay {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    /* barra de progresso de leitura */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 5px;
+      width: 0%;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      z-index: 1100;
+      transition: width 0.1s;
+      box-shadow: 0 0 10px #3b82f6;
+    }
+
+    /* cabeçalho com imagem de fundo (simulada com gradiente + textura) */
+    .header-section {
+      position: relative;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="0,0 100,0 100,70 0,100" fill="rgba(255,255,255,0.05)"/></svg>'), linear-gradient(145deg, #0b2b5c, #2a1b6d);
+      background-size: cover, auto;
+      background-blend-mode: overlay;
+      color: white;
+      padding: 4rem 2rem;
+      border-radius: 0 0 3rem 3rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 15px 30px -10px rgba(0,0,0,0.3);
+    }
+    .header-overlay {
+      background: rgba(0, 30, 60, 0.5);
+      border-radius: inherit;
+      padding: 2rem;
+      backdrop-filter: blur(2px);
+    }
+    .header-section h1 {
+      font-weight: 700;
+      font-size: 3rem;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .header-section i { font-size: 2.5rem; margin-right: 10px; }
+
+    /* índice lateral */
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      padding-right: 15px;
+    }
+    .sidebar .nav-link {
+      color: #1e293b;
+      font-weight: 500;
+      border-radius: 30px;
+      padding: 10px 18px;
+      margin-bottom: 5px;
+      transition: 0.2s;
+      background-color: transparent;
+    }
+    .sidebar .nav-link:hover {
+      background-color: #e2e8f0;
+      color: #0f2b5c;
+    }
+    .sidebar .nav-link.active {
+      background-color: #1e3a8a;
+      color: white !important;
+    }
+    body.dark-mode .sidebar .nav-link {
+      color: #cfcfcf;
+    }
+    body.dark-mode .sidebar .nav-link:hover {
+      background-color: #2d2d2d;
+    }
+    body.dark-mode .sidebar .nav-link.active {
+      background-color: #3b4e9b;
+    }
+
+    /* cards das seções */
+    .section-card {
+      border: none;
+      border-radius: 28px;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(2px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+      padding: 1.8rem;
+      margin-bottom: 2.5rem;
+      transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+      scroll-margin-top: 80px; /* para compensar a barra fixa */
+    }
+    body.dark-mode .section-card {
+      background: #1a1a1a;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    }
+    .section-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 35px rgba(37, 99, 235, 0.15);
+    }
+    .section-icon {
+      font-size: 2.4rem;
+      background: linear-gradient(130deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-right: 15px;
+    }
+    /* animação fade-in ao rolar (usando Intersection Observer) */
+    .fade-section {
+      opacity: 0;
+      transform: translateY(25px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* aceitação */
+    .acceptance-box {
+      background: #ffffffd6;
+      backdrop-filter: blur(8px);
+      border-radius: 50px;
+      padding: 1.8rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 20px 40px -15px #1e3a8a;
+    }
+    body.dark-mode .acceptance-box {
+      background: #232323d6;
+      border-color: #3a3a3a;
+    }
+
+    /* botões */
+    .btn-aceitar {
+      background: linear-gradient(145deg, #1e3a8a, #3b5b9b);
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 12px 30px;
+      border-radius: 40px;
+      transition: 0.3s;
+    }
+    .btn-aceitar:hover {
+      background: linear-gradient(145deg, #15306b, #2e4a7a);
+      transform: scale(1.05);
+      box-shadow: 0 10px 20px #1e3a8a70;
+    }
+    .btn-voltar {
+      background: transparent;
+      border: 2px solid #4b5563;
+      color: #1f2937;
+      font-weight: 600;
+      padding: 12px 30px;
+      border-radius: 40px;
+      margin-left: 15px;
+    }
+    body.dark-mode .btn-voltar {
+      color: #e0e0e0;
+      border-color: #aaa;
+    }
+    .btn-voltar:hover {
+      background-color: #f1f5f9;
+    }
+    body.dark-mode .btn-voltar:hover {
+      background-color: #2a2a2a;
+    }
+
+    /* rodapé simples */
+    .footer-note {
+      text-align: center;
+      padding: 2rem;
+      margin-top: 3rem;
+      border-top: 1px dashed #aaa;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA DE PROGRESSO DE LEITURA -->
+  <div id="progress-bar"></div>
+
+  <!-- BOTÃO MODO CLARO/ESCURO -->
+  <button class="btn btn-sm btn-outline-secondary position-fixed top-0 end-0 m-3 z-3" 
+          id="darkModeToggle" style="border-radius: 40px; padding: 0.5rem 1.2rem;">
+    <i class="bi bi-moon-stars"></i> <span id="darkModeText"></span>
+  </button>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="container-fluid px-lg-5">
+
+    <!-- CABEÇALHO DA PÁGINA -->
+    <header class="header-section">
+      <div class="header-overlay d-flex align-items-center">
+        <div>
+          <i class="bi bi-shield-lock-fill"></i>
+          <h1 class="display-4 d-inline-block">Política de Privacidade</h1>
+          <p class="lead mt-3">Esta política explica como o portal académico coleta, utiliza e protege as informações dos utilizadores.</p>
+          <span class="badge bg-light text-dark rounded-pill px-4 py-2 mt-2"><i class="bi bi-building me-2"></i>Campus universitário · atualizado 2025</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ROW COM ÍNDICE LATERAL E CONTEÚDO -->
+    <div class="row g-5">
+      
+      <!-- ÍNDICE INTERATIVO (lateral esquerda) -->
+      <aside class="col-lg-3 col-md-4">
+        <div class="sidebar list-group list-group-flush rounded-4 p-3 bg-white shadow-sm">
+          <h5 class="mb-3"><i class="bi bi-list-ul me-2"></i>📑 Índice</h5>
+          <nav class="nav flex-column" id="indexNav">
+            <a class="nav-link" href="#introducao"><i class="bi bi-info-circle me-2"></i>Introdução</a>
+            <a class="nav-link" href="#dados"><i class="bi bi-database me-2"></i>Dados coletados</a>
+            <a class="nav-link" href="#uso"><i class="bi bi-bar-chart me-2"></i>Como utilizamos</a>
+            <a class="nav-link" href="#protecao"><i class="bi bi-lock me-2"></i>Proteção das informações</a>
+            <a class="nav-link" href="#partilha"><i class="bi bi-share me-2"></i>Partilha de dados</a>
+            <a class="nav-link" href="#cookies"><i class="bi bi-cookie me-2"></i>Cookies</a>
+            <a class="nav-link" href="#direitos"><i class="bi bi-person-check me-2"></i>Direitos do utilizador</a>
+            <a class="nav-link" href="#alteracoes"><i class="bi bi-pencil-square me-2"></i>Alterações</a>
+            <a class="nav-link" href="#contactos"><i class="bi bi-envelope me-2"></i>Contactos</a>
+            <a class="nav-link" href="#aceitacao"><i class="bi bi-check2-circle me-2"></i>Aceitação</a>
+          </nav>
+          <hr class="my-3">
+          <div class="small text-muted">
+            <i class="bi bi-arrow-up-short"></i> Clique e role suavemente
+          </div>
+        </div>
+      </aside>
+
+      <!-- CONTEÚDO PRINCIPAL (SEÇÕES) -->
+      <main class="col-lg-9 col-md-8">
+
+        <!-- INTRODUÇÃO -->
+        <section id="introducao" class="section-card fade-section">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-info-circle-fill section-icon"></i>
+            <h2 class="h3 mb-0">Introdução</h2>
+          </div>
+          <p class="mb-0">A universidade compromete-se a proteger a privacidade e os dados pessoais de estudantes, professores e visitantes que utilizam o portal académico. Esta política detalha os nossos compromissos e práticas.</p>
+        </section>
+
+        <!-- DADOS COLETADOS -->
+        <section id="dados" class="section-card fade-section">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-database-fill section-icon"></i>
+            <h2 class="h3 mb-0">Dados coletados</h2>
+          </div>
+          <ul class="list-unstyled row">
+            <li class="col-sm-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Nome completo</li>
+            <li class="col-sm-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Email institucional</li>
+            <li class="col-sm-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Número de estudante</li>
+            <li class="col-sm-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Dados académicos (notas, matrículas)</li>
+            <li class="col-sm-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Informações de acesso (logs, IP)</li>
+          </ul>
+        </section>
+
+        <!-- COMO UTILIZAMOS -->
+        <section id="uso" class="section-card fade-section">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-bar-chart-fill section-icon"></i>
+            <h2 class="h3 mb-0">Como utilizamos os dados</h2>
+          </div>
+          <div class="row">
+            <div class="col-md-6"><i class="bi bi-journal-bookmark-fill me-2"></i>Gestão académica</div>
+            <div class="col-md-6"><i class="bi bi-megaphone-fill me-2"></i>Comunicação institucional</div>
+            <div class="col-md-6"><i class="bi bi-door-open-fill me-2"></i>Acesso ao portal</div>
+            <div class="col-md-6"><i class="bi bi-file-text-fill me-2"></i>Emissão de documentos</div>
+          </div>
+        </section>
+
+        <!-- PROTEÇÃO DAS INFORMAÇÕES -->
+        <section id="protecao" class="section-card fade-section">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-lock-fill section-icon"></i>
+            <h2 class="h3 mb-0">Proteção das informações</h2>
+          </div>
+          <p>Aplicamos medidas rigorosas: <span class="badge bg-primary me-2">criptografia TLS</span> <span class="badge bg-secondary me-2">autenticação 2FA</span> <span class="badge bg-info me-2">controlo de acesso</span> <span class="badge bg-warning">monitorização 24/7</span>.</p>
+        </section>
+
+        <!-- PARTILHA DE DADOS -->
+        <section id="partilha" class="section-card fade-section">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-share-fill section-icon"></i>
+            <h2 class="h3 mb-0">Partilha de dados</h2>
+          </div>
+          <p>Os dados dos utilizadores <strong>não são partilhados</strong> com terceiros sem autorização explícita, exceto quando exigido por lei ou para proteção da universidade.</p>
+        </section>
+
+        <!-- COOKIES -->
+        <section id="cookies" class="section-card fade-section">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-cookie section-icon"></i>
+            <h2 class="h3 mb-0">Cookies e tecnologias</h2>
+          </div>
+          <p>O portal utiliza cookies para melhorar a experiência, guardar preferências de idioma e manter sessões de login seguras. Pode gerir as preferências no seu navegador.</p>
+        </section>
+
+        <!-- DIREITOS DO UTILIZADOR -->
+        <section id="direitos" class="section-card fade-section">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-person-check-fill section-icon"></i>
+            <h2 class="h3 mb-0">Direitos do utilizador</h2>
+          </div>
+          <ul>
+            <li>Solicitar acesso aos seus dados</li>
+            <li>Corrigir informações incompletas ou erradas</li>
+            <li>Solicitar exclusão (direito ao esquecimento)</li>
+            <li>Limitar ou opor-se a certos usos</li>
+          </ul>
+        </section>
+
+        <!-- ALTERAÇÕES NA POLÍTICA -->
+        <section id="alteracoes" class="section-card fade-section">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-pencil-fill section-icon"></i>
+            <h2 class="h3 mb-0">Alterações na política</h2>
+          </div>
+          <p>Esta política pode ser atualizada periodicamente para refletir melhorias no sistema ou alterações legais. A versão atual estará sempre disponível no portal.</p>
+        </section>
+
+        <!-- CONTACTOS -->
+        <section id="contactos" class="section-card fade-section">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-envelope-fill section-icon"></i>
+            <h2 class="h3 mb-0">Contactos</h2>
+          </div>
+          <p class="mb-1"><i class="bi bi-envelope-at me-2"></i>privacidade@universidade.ao</p>
+          <p><i class="bi bi-telephone-fill me-2"></i>+244 923 456 789</p>
+        </section>
+
+        <!-- ACEITAÇÃO E BOTÕES -->
+        <section id="aceitacao" class="section-card fade-section acceptance-box">
+          <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="aceitoCheck" style="transform: scale(1.3); margin-right: 12px;">
+            <label class="form-check-label h6" for="aceitoCheck">
+              ☑ <strong>Li e compreendi a política de privacidade</strong>
+            </label>
+          </div>
+          <div class="d-flex flex-wrap">
+            <button class="btn btn-aceitar"><i class="bi bi-check-lg me-2"></i>Aceitar</button>
+              <a href="login.html">
+                  <button class="btn btn-voltar"><i class="bi bi-arrow-left me-2"></i>Voltar</button>
+              </a>
+          </div>
+          <p class="text-muted small mt-3"><i class="bi bi-info-circle"></i> Ao aceitar, concorda com a coleta e uso responsável dos seus dados.</p>
+        </section>
+
+        <div class="footer-note">
+          <i class="bi bi-c-circle"></i> Portal Académico · Todos os direitos reservados · Política de Privacidade
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS (para funcionalidades opcionais) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- SCRIPT PERSONALIZADO: progresso, dark mode, scroll ativo, animações -->
+  <script>
+    (function() {
+      // ----- DARK MODE -----
+      const toggle = document.getElementById('darkModeToggle');
+      const darkText = document.getElementById('darkModeText');
+      const body = document.body;
+      toggle.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        if (body.classList.contains('dark-mode')) {
+          darkText.innerText = 'Claro';
+          toggle.innerHTML = '<i class="bi bi-brightness-high"></i> <span id="darkModeText">Claro</span>';
+        } else {
+          darkText.innerText = 'Escuro';
+          toggle.innerHTML = '<i class="bi bi-moon-stars"></i> <span id="darkModeText">Escuro</span>';
+        }
+      });
+
+      // ----- BARRA DE PROGRESSO DE LEITURA -----
+      const progressBar = document.getElementById('progress-bar');
+      function updateProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+      }
+      window.addEventListener('scroll', updateProgress);
+      window.addEventListener('resize', updateProgress);
+      updateProgress();
+
+      // ----- DESTAQUE DO ÍNDICE (scroll ativo) + SMOOTH CLICK -----
+      const sections = document.querySelectorAll('section[id]');
+      const navLinks = document.querySelectorAll('#indexNav .nav-link');
+
+      function setActiveLink() {
+        let current = '';
+        const scrollPos = window.scrollY + 100; // offset para ativar um pouco antes
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop;
+          const sectionBottom = sectionTop + section.offsetHeight;
+          if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+            current = section.getAttribute('id');
+          }
+        });
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          const href = link.getAttribute('href').substring(1); // remove #
+          if (href === current) {
+            link.classList.add('active');
+          }
+        });
+      }
+      window.addEventListener('scroll', setActiveLink);
+      window.addEventListener('load', setActiveLink);
+
+      // scroll suave ao clicar no índice + offset
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href'); // #introducao
+          const targetEl = document.querySelector(targetId);
+          if (targetEl) {
+            const offsetTop = targetEl.offsetTop - 20;  // pequeno espaço superior
+            window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+          }
+        });
+      });
+
+      // ----- ANIMAÇÃO FADE-IN AO ROLAR (Intersection Observer) -----
+      const fadeElements = document.querySelectorAll('.fade-section');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          } else {
+            // opcional: remover se quiser repetir sempre que entra/sai
+            // entry.target.classList.remove('visible');
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+      fadeElements.forEach(el => observer.observe(el));
+
+      // Aceitação simples: apenas demonstração de clique
+      const aceitarBtn = document.querySelector('.btn-aceitar');
+      const voltarBtn = document.querySelector('.btn-voltar');
+      const checkBox = document.getElementById('aceitoCheck');
+      aceitarBtn.addEventListener('click', () => {
+        if (checkBox.checked) {
+          alert('Aceitação registada com sucesso! (simulação)');
+        } else {
+          alert('Por favor, marque a caixa "Li e compreendi" para aceitar.');
+        }
+      });
+      voltarBtn.addEventListener('click', () => {
+        alert('Voltar à página anterior (simulação)');
+      });
+    })();
+  </script>
+
+  <!-- pequeno ajuste para exibir a barra de progresso com z-index -->
+  <style>
+    #progress-bar { z-index: 1050; }
+    .dark-mode .bg-white { background-color: #1f1f1f !important; }
+    .dark-mode .list-group, .dark-mode .sidebar { background-color: #1f1f1f !important; border-color: #333; }
+    .dark-mode .badge.bg-light { background-color: #333 !important; color: #eee !important; }
+    .badge { font-weight: 500; }
+  </style>
+</body>
+</html>

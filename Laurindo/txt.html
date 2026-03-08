@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal do Estudante — Dashboard</title>
+  <!-- Bootstrap 5.3 + Icons + Font Awesome + Chart.js -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Google Font: Inter (modern sans) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: var(--bs-body-bg);
+      transition: background-color 0.3s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
+    /* glassmorphism base */
+    .glass-card {
+      background: rgba(var(--bs-tertiary-bg-rgb), 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+    .glass-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 30px rgba(0,0,0,0.1);
+    }
+    /* sidebar styling */
+    .sidebar {
+      background: rgba(var(--bs-tertiary-bg-rgb), 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+      min-height: 100vh;
+      transition: all 0.2s;
+    }
+    .sidebar .nav-link {
+      color: var(--bs-body-color);
+      border-radius: 12px;
+      margin: 4px 12px;
+      padding: 12px 16px;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .sidebar .nav-link i {
+      width: 24px;
+      font-size: 1.2rem;
+      margin-right: 12px;
+      color: var(--bs-primary);
+    }
+    .sidebar .nav-link:hover {
+      background: rgba(var(--bs-primary-rgb), 0.1);
+      transform: scale(1.02);
+    }
+    .sidebar .nav-link.active {
+      background: var(--bs-primary);
+      color: white;
+      box-shadow: 0 6px 14px rgba(var(--bs-primary-rgb), 0.4);
+    }
+    .sidebar .nav-link.active i {
+      color: white;
+    }
+    /* cards info */
+    .info-card {
+      border-radius: 24px;
+      padding: 1.2rem 1.5rem;
+      border: none;
+      background: rgba(var(--bs-tertiary-bg-rgb), 0.6);
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+    }
+    /* schedule cells */
+    .schedule-item {
+      background: rgba(var(--bs-primary-rgb), 0.05);
+      border-left: 5px solid var(--bs-primary);
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      transition: 0.2s;
+    }
+    .schedule-item:hover {
+      background: rgba(var(--bs-primary-rgb), 0.12);
+    }
+    /* chatbot bubble */
+    .chatbot-bubble {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 999;
+    }
+    .chat-card {
+      width: 320px;
+      background: rgba(var(--bs-tertiary-bg-rgb), 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+      border-radius: 32px 32px 20px 32px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+      overflow: hidden;
+      display: none;
+      transition: 0.3s;
+    }
+    .chat-card.show {
+      display: block;
+      animation: fadeInUp 0.3s ease;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .chat-header {
+      background: var(--bs-primary);
+      color: white;
+      padding: 16px 20px;
+      font-weight: 600;
+    }
+    .chat-msg {
+      background: rgba(var(--bs-secondary-bg-rgb), 0.7);
+      border-radius: 18px 18px 18px 6px;
+      padding: 10px 16px;
+      margin: 12px;
+      max-width: 80%;
+    }
+    .chat-msg.bot {
+      background: var(--bs-primary);
+      color: white;
+      align-self: flex-start;
+      border-radius: 18px 18px 18px 6px;
+    }
+    .chat-msg.user {
+      background: rgba(var(--bs-tertiary-bg-rgb), 0.9);
+      align-self: flex-end;
+      border-radius: 18px 18px 6px 18px;
+    }
+    /* theme toggle animation */
+    .theme-toggle {
+      cursor: pointer;
+      background: rgba(var(--bs-secondary-bg-rgb), 0.5);
+      border-radius: 40px;
+      padding: 8px 16px;
+      backdrop-filter: blur(4px);
+    }
+    /* document list */
+    .doc-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(var(--bs-tertiary-bg-rgb), 0.3);
+      border-radius: 18px;
+      margin-bottom: 8px;
+      transition: 0.2s;
+    }
+    .doc-item:hover {
+      background: rgba(var(--bs-primary-rgb), 0.08);
+    }
+    /* chart containers */
+    .chart-box {
+      background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
+      border-radius: 28px;
+      padding: 20px 16px 10px 16px;
+      backdrop-filter: blur(4px);
+    }
+    /* avatar */
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #0d6efd, #0b5ed7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.4rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- sidebar + main grid -->
+<div class="container-fluid g-0">
+  <div class="row g-0">
+    <!-- SIDEBAR (col-auto) -->
+    <div class="col-auto sidebar d-flex flex-column p-3" style="width: 280px;">
+      <div class="d-flex align-items-center mb-4 mt-2 px-3">
+        <i class="fas fa-graduation-cap fs-1 me-3 text-primary"></i>
+        <span class="fs-4 fw-semibold">Estudante</span>
+      </div>
+      <hr class="opacity-25">
+      <nav class="nav nav-pills flex-column mb-auto">
+        <a href="#" class="nav-link active"><i class="fas fa-home"></i>Dashboard</a>
+        <a href="#" class="nav-link"><i class="fas fa-book-open"></i>Minhas Disciplinas</a>
+        <a href="#" class="nav-link"><i class="fas fa-chart-line"></i>Minhas Notas</a>
+        <a href="#" class="nav-link"><i class="fas fa-calendar-alt"></i>Horário de Aulas</a>
+        <a href="#" class="nav-link"><i class="fas fa-edit"></i>Matrícula / Inscrição</a>
+        <a href="#" class="nav-link"><i class="fas fa-file-alt"></i>Documentos Académicos</a>
+        <a href="#" class="nav-link"><i class="fas fa-credit-card"></i>Propinas / Pagamentos</a>
+        <a href="#" class="nav-link"><i class="fas fa-bullhorn"></i>Avisos Académicos</a>
+        <a href="#" class="nav-link"><i class="fas fa-comment-dots"></i>Mensagens</a>
+        <a href="#" class="nav-link"><i class="fas fa-robot"></i>Assistente Virtual</a>
+        <a href="#" class="nav-link"><i class="fas fa-cog"></i>Configurações</a>
+        <a href="#" class="nav-link text-danger"><i class="fas fa-sign-out-alt"></i>Terminar Sessão</a>
+      </nav>
+      <div class="mt-auto pt-4 small text-secondary px-3">
+        <i class="fas fa-circle text-success me-1"></i> online · António
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT (col) -->
+    <div class="col p-4" style="background: rgba(var(--bs-body-bg-rgb),0.6);">
+      <!-- HEADER with profile, theme toggle -->
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar">A</div>
+          <div>
+            <h2 class="h4 mb-0 fw-bold">Bem-vindo, António Silva 👋</h2>
+            <p class="text-secondary mb-0"><i class="fas fa-graduation-cap me-1"></i>Engenharia Informática · 2º Ano</p>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mt-2 mt-sm-0">
+          <div class="theme-toggle d-flex align-items-center gap-2" id="themeToggle">
+            <i class="fas fa-sun"></i>
+            <div class="form-check form-switch d-inline-block m-0">
+              <input class="form-check-input" type="checkbox" id="themeSwitch" style="cursor: pointer;">
+            </div>
+            <i class="fas fa-moon"></i>
+          </div>
+          <a href="#" class="position-relative">
+            <i class="fas fa-bell fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+          </a>
+          <a href="#"><i class="fas fa-globe fs-5"></i></a>
+        </div>
+      </div>
+
+      <!-- CARDS (4 resumos) -->
+      <div class="row g-4 mb-5">
+        <div class="col-sm-6 col-lg-3">
+          <div class="info-card glass-card d-flex align-items-center">
+            <i class="fas fa-book fa-2x text-primary me-3"></i>
+            <div>
+              <span class="text-secondary text-uppercase small">Disciplinas ativas</span>
+              <h3 class="mb-0 fw-bold">6</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="info-card glass-card d-flex align-items-center">
+            <i class="fas fa-star fa-2x text-warning me-3"></i>
+            <div>
+              <span class="text-secondary text-uppercase small">Média Geral</span>
+              <h3 class="mb-0 fw-bold">15 <small class="fw-normal fs-6">/20</small></h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="info-card glass-card d-flex align-items-center">
+            <i class="fas fa-clock fa-2x text-success me-3"></i>
+            <div>
+              <span class="text-secondary text-uppercase small">Próximas Aulas</span>
+              <h3 class="mb-0 fw-bold">3 hoje</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="info-card glass-card d-flex align-items-center">
+            <i class="fas fa-file-pdf fa-2x text-danger me-3"></i>
+            <div>
+              <span class="text-secondary text-uppercase small">Documentos disp.</span>
+              <h3 class="mb-0 fw-bold">2</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRÁFICOS (linha + barras) -->
+      <div class="row g-4 mb-5">
+        <div class="col-md-6">
+          <div class="chart-box glass-card">
+            <h5 class="fw-semibold mb-3"><i class="fas fa-chart-line me-2 text-primary"></i>Evolução das Notas</h5>
+            <canvas id="gradeChart" style="height:200px; width:100%;"></canvas>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-box glass-card">
+            <h5 class="fw-semibold mb-3"><i class="fas fa-chart-bar me-2 text-primary"></i>Média por Disciplina</h5>
+            <canvas id="subjectChart" style="height:200px; width:100%;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- HORÁRIO + AVISOS / DOCS (grid 2 col) -->
+      <div class="row g-4 mb-4">
+        <!-- Horário semanal -->
+        <div class="col-lg-5">
+          <div class="glass-card p-4 rounded-4 h-100">
+            <h5 class="fw-semibold mb-3"><i class="fas fa-calendar-week me-2 text-primary"></i>Horário de Hoje</h5>
+            <div class="schedule-item d-flex justify-content-between align-items-center">
+              <span><i class="far fa-clock me-2 text-primary"></i>08:00 - 10:00</span>
+              <span class="fw-semibold">Programação</span>
+              <span class="badge bg-primary-subtle text-primary px-3 py-2">Lab 302</span>
+            </div>
+            <div class="schedule-item d-flex justify-content-between align-items-center">
+              <span><i class="far fa-clock me-2 text-primary"></i>10:15 - 12:00</span>
+              <span class="fw-semibold">Matemática Discreta</span>
+              <span class="badge bg-primary-subtle text-primary px-3 py-2">Sala 12B</span>
+            </div>
+            <div class="schedule-item d-flex justify-content-between align-items-center">
+              <span><i class="far fa-clock me-2 text-primary"></i>14:00 - 16:00</span>
+              <span class="fw-semibold">Redes de Computadores</span>
+              <span class="badge bg-primary-subtle text-primary px-3 py-2">Lab 205</span>
+            </div>
+            <p class="text-secondary mt-3 small"><i class="fas fa-info-circle me-1"></i>Amanhã: Base de Dados, Eng. Software</p>
+          </div>
+        </div>
+        <!-- Avisos + Documentos combinados -->
+        <div class="col-lg-7">
+          <div class="row g-4">
+            <div class="col-12">
+              <div class="glass-card p-4 rounded-4">
+                <h5 class="fw-semibold mb-3"><i class="fas fa-bullhorn me-2 text-primary"></i>Avisos Académicos</h5>
+                <ul class="list-unstyled">
+                  <li class="mb-2 d-flex"><i class="fas fa-circle text-warning me-2 mt-1" style="font-size: 0.6rem;"></i><span><strong>Inscrição 2º semestre</strong> — até 30/04</span></li>
+                  <li class="mb-2 d-flex"><i class="fas fa-circle text-info me-2 mt-1" style="font-size: 0.6rem;"></i><span><strong>Seminário IA</strong> — 12/04, auditório</span></li>
+                  <li class="mb-2 d-flex"><i class="fas fa-circle text-danger me-2 mt-1" style="font-size: 0.6rem;"></i><span><strong>Prazo propinas</strong> — 10/04 (desconto 5%)</span></li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="glass-card p-4 rounded-4">
+                <h5 class="fw-semibold mb-3"><i class="fas fa-file-alt me-2 text-primary"></i>Documentos Académicos</h5>
+                <div class="doc-item">
+                  <i class="fas fa-file-pdf text-danger me-3 fs-5"></i>
+                  <span class="flex-grow-1">Declaração de estudante</span>
+                  <a href="#" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fas fa-download"></i> PDF</a>
+                </div>
+                <div class="doc-item">
+                  <i class="fas fa-file-pdf text-danger me-3 fs-5"></i>
+                  <span class="flex-grow-1">Histórico escolar (2024)</span>
+                  <a href="#" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fas fa-download"></i> PDF</a>
+                </div>
+                <div class="doc-item">
+                  <i class="fas fa-file-pdf text-danger me-3 fs-5"></i>
+                  <span class="flex-grow-1">Comprovativo de matrícula</span>
+                  <a href="#" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fas fa-download"></i> PDF</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- rodapé simples -->
+      <div class="text-secondary small mt-5 border-top pt-3">
+        <i class="fas fa-database me-1"></i> dados em memória · última atualização agora
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHATBOT flutuante -->
+<div class="chatbot-bubble">
+  <div class="chat-card" id="chatCard">
+    <div class="chat-header d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-robot me-2"></i>Assistente Virtual</span>
+      <button class="btn-close btn-close-white" id="closeChat" aria-label="Close"></button>
+    </div>
+    <div class="p-3 d-flex flex-column" style="min-height: 240px; max-height: 300px; overflow-y: auto;" id="chatMessages">
+      <div class="chat-msg bot">Olá António, como posso ajudar com o seu curso hoje? 😊</div>
+      <div class="chat-msg user align-self-end mt-2">Qual é a média para aprovação?</div>
+      <div class="chat-msg bot mt-2">Para aprovação precisa de média ≥ 9.5 valores. Posso ajudar com mais alguma coisa?</div>
+    </div>
+    <div class="p-3 border-top d-flex">
+      <input type="text" class="form-control form-control-sm rounded-pill me-2" placeholder="Escreva ..." id="chatInput">
+      <button class="btn btn-primary rounded-pill" id="sendChat"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+  <!-- botão flutuante -->
+  <button class="btn btn-primary rounded-circle p-3 shadow-lg" style="width: 65px; height: 65px;" id="chatToggle">
+    <i class="fas fa-comment-dots fs-3"></i>
+  </button>
+</div>
+
+<!-- scripts -->
+<script>
+  (function() {
+    // ----- GRÁFICOS (mock) -----
+    const ctxGrade = document.getElementById('gradeChart').getContext('2d');
+    new Chart(ctxGrade, {
+      type: 'line',
+      data: {
+        labels: ['1º Sem', '2º Sem', '3º Sem', '4º Sem'],
+        datasets: [{
+          label: 'Média',
+          data: [13, 15, 14, 16],
+          borderColor: '#0d6efd',
+          backgroundColor: 'rgba(13,110,253,0.1)',
+          tension: 0.3,
+          fill: true,
+          pointBackgroundColor: '#0d6efd'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    const ctxSubject = document.getElementById('subjectChart').getContext('2d');
+    new Chart(ctxSubject, {
+      type: 'bar',
+      data: {
+        labels: ['Programação', 'Matemática', 'Redes', 'BDados'],
+        datasets: [{
+          data: [16, 14, 15, 17],
+          backgroundColor: ['#0d6efd', '#6f42c1', '#20c997', '#fd7e14'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // ----- TEMA (claro/escuro) com Bootstrap 5.3 -----
+    const htmlEl = document.documentElement;
+    const themeSwitch = document.getElementById('themeSwitch');
+    const themeToggleDiv = document.getElementById('themeToggle');
+
+    function setTheme(theme) {
+      htmlEl.setAttribute('data-bs-theme', theme);
+      themeSwitch.checked = (theme === 'dark');
+    }
+
+    themeToggleDiv.addEventListener('click', (e) => {
+      // impede que clique no checkbox dispare duas vezes
+      if (e.target.tagName !== 'INPUT') {
+        const newTheme = htmlEl.getAttribute('data-bs-theme') === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+      }
+    });
+    themeSwitch.addEventListener('change', (e) => {
+      const newTheme = e.target.checked ? 'dark' : 'light';
+      setTheme(newTheme);
+    });
+
+    // ----- CHATBOT interativo simples -----
+    const chatCard = document.getElementById('chatCard');
+    const chatToggle = document.getElementById('chatToggle');
+    const closeChat = document.getElementById('closeChat');
+    const sendBtn = document.getElementById('sendChat');
+    const chatInput = document.getElementById('chatInput');
+    const chatMessages = document.getElementById('chatMessages');
+
+    chatToggle.addEventListener('click', () => {
+      chatCard.classList.toggle('show');
+    });
+    closeChat.addEventListener('click', () => {
+      chatCard.classList.remove('show');
+    });
+
+    function addMessage(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('chat-msg', sender);
+      msgDiv.textContent = text;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    sendBtn.addEventListener('click', () => {
+      const msg = chatInput.value.trim();
+      if (!msg) return;
+      addMessage(msg, 'user');
+      chatInput.value = '';
+
+      // resposta automática simples (mock)
+      setTimeout(() => {
+        let reply = "Entendi. Vou verificar isso para você!";
+        if (msg.toLowerCase().includes('nota') || msg.toLowerCase().includes('média')) {
+          reply = "A sua média geral é 15 valores. Quer detalhes por disciplina?";
+        } else if (msg.toLowerCase().includes('disciplina') || msg.toLowerCase().includes('cadeira')) {
+          reply = "Está matriculado em 6 disciplinas: Programação, Matemática, Redes, BD, ES, SO.";
+        } else if (msg.toLowerCase().includes('horário') || msg.toLowerCase().includes('aula')) {
+          reply = "Hoje tem aulas às 8h, 10h e 14h. Detalhes no horário acima.";
+        }
+        addMessage(reply, 'bot');
+      }, 600);
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendBtn.click();
+      }
+    });
+
+    // pequeno detalhe: tooltips mentais (não implementado)
+
+    // ----- dados de memória (tudo mockado) -----
+    console.log('Portal do Estudante (memória) carregado com sucesso');
+  })();
+</script>
+<!-- Bootstrap JS (opcional para alguns componentes) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- estilo adicional para ícones ativos etc (já incluído) -->
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termos de Uso · Portal Académico</title>
+  <!-- Bootstrap 5 + Ícones -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    * { scroll-behavior: smooth; }
+    body {
+      padding-top: 4px;  /* espaço para a barra de progresso fixa */
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    /* Barra de progresso de leitura */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      width: 0%;
+      background: linear-gradient(90deg, #0d6efd, #6610f2, #0d6efd);
+      background-size: 200% auto;
+      box-shadow: 0 0 10px rgba(13,110,253,0.5);
+      z-index: 1100;
+      transition: width 0.1s;
+      border-radius: 0 2px 2px 0;
+    }
+    /* Cabeçalho com imagem de fundo (campus) e gradiente */
+    .header-bg {
+      background: linear-gradient(135deg, #0d6efd, #6610f2), 
+                  url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+      background-blend-mode: overlay;
+      background-size: cover;
+      background-position: center 30%;
+      color: white;
+      border-radius: 0 0 2.5rem 2.5rem;
+      padding: 3rem 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);
+    }
+    .header-bg::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.1);
+      border-radius: 0 0 2.5rem 2.5rem;
+      z-index: 0;
+    }
+    .header-content { position: relative; z-index: 2; }
+
+    /* Cards das seções com animação suave */
+    .section-card {
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 1.5rem;
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+      transition: transform 0.25s ease, box-shadow 0.3s ease, background-color 0.3s;
+    }
+    .section-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 30px rgba(0,0,0,0.08);
+    }
+
+    /* Índice lateral — links interativos */
+    .index-link {
+      display: block;
+      padding: 0.5rem 1rem;
+      margin: 0.2rem 0;
+      color: var(--bs-body-color);
+      text-decoration: none;
+      border-radius: 2rem;
+      font-weight: 450;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .index-link:hover {
+      background: rgba(13, 110, 253, 0.08);
+      border-left-color: #0d6efd;
+      color: #0d6efd;
+    }
+    .index-link.active {
+      background: #0d6efd;
+      color: white !important;
+      border-left-color: #ffffff80;
+      font-weight: 500;
+    }
+    /* versão offcanvas mantém o estilo */
+    .offcanvas .index-link.active {
+      background: #0d6efd;
+      color: white;
+    }
+
+    /* Botão flutuante do modo escuro */
+    .dark-mode-toggle {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #0d6efd;
+      border: none;
+      color: white;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(13, 110, 253, 0.4);
+      z-index: 1050;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .dark-mode-toggle:hover {
+      transform: scale(1.1) rotate(8deg);
+      background: #0b5ed7;
+    }
+
+    /* Rodapé escuro (adaptável ao tema) */
+    .footer-custom {
+      background: #212529;
+      color: #f8f9fa;
+      border-radius: 2rem 2rem 0 0;
+      padding: 2.5rem 1.5rem;
+      margin-top: 3rem;
+    }
+    [data-bs-theme="dark"] .footer-custom {
+      background: #1a1e21;
+      border-top: 1px solid #2c3034;
+    }
+
+    /* Ajuste para sticky sidebar */
+    .sticky-sidebar {
+      position: sticky;
+      top: 1.5rem;
+      z-index: 10;
+    }
+
+    /* checkbox e botões */
+    .accept-card {
+      background: var(--bs-tertiary-bg);
+      border: 1px solid var(--bs-primary-border-subtle);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Barra de progresso de leitura -->
+<div id="progress-bar"></div>
+
+<!-- Botão modo escuro flutuante -->
+<button class="dark-mode-toggle" id="darkModeToggle" aria-label="Alternar modo escuro/claro">
+  <i class="bi bi-moon-stars"></i>
+</button>
+
+<!-- OFF-CANVAS (Índice para mobile) -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="indexOffcanvas" aria-labelledby="offcanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasLabel"><i class="bi bi-list-ul me-2"></i>Índice</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+  </div>
+  <div class="offcanvas-body">
+    <nav class="nav flex-column" id="mobile-index-list">
+      <a class="index-link" href="#introducao" data-bs-dismiss="offcanvas"><i class="bi bi-dot me-2"></i>Introdução</a>
+      <a class="index-link" href="#condicoes" data-bs-dismiss="offcanvas"><i class="bi bi-dot me-2"></i>Condições de utilização</a>
+      <a class="index-link" href="#responsabilidades" data-bs-dismiss="offcanvas"><i class="bi bi-dot me-2"></i>Responsabilidades</a>
+      <a class="index-link" href="#privacidade" data-bs-dismiss="offcanvas"><i class="bi bi-dot me-2"></i>Política de privacidade</a>
+      <a class="index-link" href="#direitos" data-bs-dismiss="offcanvas"><i class="bi bi-dot me-2"></i>Direitos da instituição</a>
+      <a class="index-link" href="#uso" data-bs-dismiss="offcanvas"><i class="bi bi-dot me-2"></i>Uso do portal</a>
+      <a class="index-link" href="#seguranca" data-bs-dismiss="offcanvas"><i class="bi bi-dot me-2"></i>Segurança e dados</a>
+      <a class="index-link" href="#alteracoes" data-bs-dismiss="offcanvas"><i class="bi bi-dot me-2"></i>Alterações aos termos</a>
+      <a class="index-link" href="#contactos" data-bs-dismiss="offcanvas"><i class="bi bi-dot me-2"></i>Contactos</a>
+    </nav>
+  </div>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<div class="container-fluid">
+  <div class="row">
+    <!-- SIDEBAR FIXA (lg+) -->
+    <div class="col-lg-3 d-none d-lg-block">
+      <div class="sticky-sidebar pt-4">
+        <div class="card border-0 shadow-sm rounded-4">
+          <div class="card-body">
+            <h5 class="card-title fw-semibold mb-3"><i class="bi bi-bookmarks-fill me-2 text-primary"></i>Índice</h5>
+            <nav class="nav flex-column" id="sidebar-index">
+              <a class="index-link" href="#introducao"><i class="bi bi-1-circle me-2"></i>Introdução</a>
+              <a class="index-link" href="#condicoes"><i class="bi bi-2-circle me-2"></i>Condições de utilização</a>
+              <a class="index-link" href="#responsabilidades"><i class="bi bi-3-circle me-2"></i>Responsabilidades</a>
+              <a class="index-link" href="#privacidade"><i class="bi bi-4-circle me-2"></i>Política de privacidade</a>
+              <a class="index-link" href="#direitos"><i class="bi bi-5-circle me-2"></i>Direitos da instituição</a>
+              <a class="index-link" href="#uso"><i class="bi bi-6-circle me-2"></i>Uso do portal</a>
+              <a class="index-link" href="#seguranca"><i class="bi bi-7-circle me-2"></i>Segurança e dados</a>
+              <a class="index-link" href="#alteracoes"><i class="bi bi-8-circle me-2"></i>Alterações aos termos</a>
+              <a class="index-link" href="#contactos"><i class="bi bi-9-circle me-2"></i>Contactos</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUNA PRINCIPAL -->
+    <div class="col-lg-9">
+      <!-- Botão índice mobile (visível apenas em telas pequenas) -->
+      <div class="d-lg-none my-3">
+        <button class="btn btn-primary rounded-pill shadow-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#indexOffcanvas">
+          <i class="bi bi-list me-2"></i>Mostrar índice
+        </button>
+      </div>
+
+      <!-- HEADER com imagem de fundo e gradiente -->
+      <div class="header-bg">
+        <div class="header-content">
+          <h1 class="display-4 fw-bold"><i class="bi bi-file-earmark-text me-3"></i>Termos de Uso</h1>
+          <p class="lead fs-4">Portal Académico • ensino e administração</p>
+          <p class="col-lg-8">Estes termos definem as regras e condições para utilização do portal académico da instituição.</p>
+        </div>
+      </div>
+
+      <!-- SEÇÕES DE CONTEÚDO (cada uma com id) -->
+      <section id="introducao" class="section-card">
+        <h2 class="h3"><i class="bi bi-info-circle-fill text-primary me-2"></i>1. Introdução</h2>
+        <p class="mb-0">O portal académico foi desenvolvido para facilitar o acesso a informações académicas, serviços administrativos e comunicação entre estudantes, professores e administração.</p>
+      </section>
+
+      <section id="condicoes" class="section-card">
+        <h2 class="h3"><i class="bi bi-person-check-fill text-primary me-2"></i>2. Condições de Utilização</h2>
+        <p>Podem utilizar o sistema:</p>
+        <ul class="mb-0">
+          <li>Estudantes da instituição (matriculados)</li>
+          <li>Professores e investigadores</li>
+          <li>Funcionários administrativos</li>
+          <li>Visitantes (modo convidado com acesso limitado)</li>
+        </ul>
+      </section>
+
+      <section id="responsabilidades" class="section-card">
+        <h2 class="h3"><i class="bi bi-shield-fill-check text-primary me-2"></i>3. Responsabilidades do Utilizador</h2>
+        <ul class="mb-0">
+          <li>Manter a confidencialidade da senha e notificar qualquer uso não autorizado.</li>
+          <li>Utilizar o portal apenas para fins académicos e institucionais.</li>
+          <li>Não divulgar informações falsas ou fraudulentas.</li>
+        </ul>
+      </section>
+
+      <section id="privacidade" class="section-card">
+        <h2 class="h3"><i class="bi bi-lock-fill text-primary me-2"></i>4. Política de Privacidade</h2>
+        <p>Os dados académicos são protegidos com criptografia. O sistema segue o Regulamento Geral de Proteção de Dados (RGPD) e as informações não são partilhadas com terceiros sem consentimento explícito, exceto por obrigação legal.</p>
+      </section>
+
+      <section id="direitos" class="section-card">
+        <h2 class="h3"><i class="bi bi-bank2 text-primary me-2"></i>5. Direitos da Instituição</h2>
+        <p>A instituição reserva-se o direito de monitorizar o uso do portal para garantir a segurança e o cumprimento das normas, podendo suspender acessos em caso de violação.</p>
+      </section>
+
+      <section id="uso" class="section-card">
+        <h2 class="h3"><i class="bi bi-laptop text-primary me-2"></i>6. Uso do Portal Académico</h2>
+        <p>Serviços disponíveis: consulta de notas, inscrição em disciplinas, acesso a documentos académicos, requisição de certificados, comunicação com professores e secretaria online.</p>
+      </section>
+
+      <section id="seguranca" class="section-card">
+        <h2 class="h3"><i class="bi bi-shield-lock-fill text-primary me-2"></i>7. Segurança e Proteção de Dados</h2>
+        <p>O portal utiliza autenticação de dois fatores (2FA) recomendada, firewall de aplicação e backups diários. Todos os dados são armazenados em servidores com certificação de segurança.</p>
+      </section>
+
+      <section id="alteracoes" class="section-card">
+        <h2 class="h3"><i class="bi bi-arrow-repeat text-primary me-2"></i>8. Alterações aos Termos</h2>
+        <p>A instituição reserva-se o direito de alterar estes termos sempre que necessário. As alterações serão comunicadas no portal com 15 dias de antecedência, e o uso continuado implica aceitação.</p>
+      </section>
+
+      <section id="contactos" class="section-card">
+        <h2 class="h3"><i class="bi bi-envelope-paper-fill text-primary me-2"></i>9. Contactos e Suporte</h2>
+        <p>Para dúvidas ou assistência:</p>
+        <ul class="list-unstyled">
+          <li><i class="bi bi-envelope me-2"></i> <a href="mailto:suporte@universidade.ao">suporte@universidade.ao</a></li>
+          <li><i class="bi bi-telephone me-2"></i> +244 923 456 789</li>
+          <li><i class="bi bi-clock me-2"></i> Segunda a Sexta, 8h – 18h</li>
+        </ul>
+      </section>
+
+      <!-- BLOCO DE ACEITAÇÃO -->
+      <div class="section-card accept-card border-2 border-primary">
+        <div class="form-check mb-4">
+          <input class="form-check-input form-check-lg" type="checkbox" id="acceptTerms" style="width:1.3rem;height:1.3rem;">
+          <label class="form-check-label fs-5 fw-semibold" for="acceptTerms">
+            <strong>Aceito os termos de uso e a política de privacidade</strong>
+          </label>
+        </div>
+        <div class="d-flex flex-wrap gap-3">
+            <a href="login.html">
+            <button class="btn btn-primary btn-lg px-5 py-3 rounded-pill"
+                  id="acceptBtn">
+              <i class="bi bi-check2-circle me-2"></i>
+              Aceitar e continuar
+            </button>
+            </a>
+            
+          
+          <button class="btn btn-outline-secondary btn-lg px-5 py-3 rounded-pill" id="cancelBtn"><i class="bi bi-x-circle me-2"></i>Cancelar</button>
+        </div>
+      </div>
+
+      <!-- RODAPÉ -->
+      <footer class="footer-custom">
+        <div class="row align-items-center">
+          <div class="col-md-4 mb-3 mb-md-0">
+            <h5 class="fw-light"><i class="bi bi-shield-check me-2"></i>Política de Privacidade</h5>
+            <p class="small opacity-75">Os seus dados estão seguros. Consulte a nossa política completa no portal.</p>
+          </div>
+          <div class="col-md-4 mb-3 mb-md-0">
+            <h5 class="fw-light"><i class="bi bi-building me-2"></i>Instituição</h5>
+            <p class="small opacity-75">Universidade Académica Moderna<br>Campus Central, Luanda</p>
+          </div>
+          <div class="col-md-4">
+            <h5 class="fw-light"><i class="bi bi-headset me-2"></i>Suporte</h5>
+            <p class="small opacity-75 mb-1"><i class="bi bi-envelope me-1"></i> suporte@universidade.ao</p>
+            <p class="small opacity-75"><i class="bi bi-telephone me-1"></i> +244 923 456 789</p>
+          </div>
+        </div>
+        <hr class="opacity-25 my-3">
+        <p class="text-center small opacity-50 mb-0">© 2025 Portal Académico — Termos de uso versão 2.4</p>
+      </footer>
+    </div> <!-- fim col-lg-9 -->
+  </div> <!-- fim row -->
+</div> <!-- fim container-fluid -->
+
+<!-- Bootstrap JS (necessário para offcanvas) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Scripts personalizados: progresso, dark mode, destaque automático, rolagem suave -->
+<script>
+  (function() {
+    // ----- elementos principais -----
+    const progress = document.getElementById('progress-bar');
+    const html = document.documentElement;
+    const darkBtn = document.getElementById('darkModeToggle');
+    const sections = document.querySelectorAll('section[id]');
+    const sidebarLinks = document.querySelectorAll('#sidebar-index .index-link');
+    const mobileLinks = document.querySelectorAll('#mobile-index-list .index-link');
+    const allLinks = [...sidebarLinks, ...mobileLinks];
+    const acceptCheck = document.getElementById('acceptTerms');
+    const acceptBtn = document.getElementById('acceptBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    // ----- barra de progresso -----
+    function updateProgress() {
+      const winScroll = window.scrollY;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      const scrolled = (winScroll / height) * 100;
+      progress.style.width = scrolled + '%';
+    }
+    window.addEventListener('scroll', updateProgress);
+    window.addEventListener('resize', updateProgress);
+
+    // ----- modo escuro / claro -----
+    function setTheme(theme) {
+      html.setAttribute('data-bs-theme', theme);
+      localStorage.setItem('theme', theme);
+      darkBtn.innerHTML = theme === 'dark' ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
+    }
+    // carregar tema salvo
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    darkBtn.addEventListener('click', () => {
+      const current = html.getAttribute('data-bs-theme');
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+
+    // ----- destaque automático da secção ativa no índice -----
+    function removeActiveClasses() {
+      allLinks.forEach(link => link.classList.remove('active'));
+    }
+    function setActiveLink(id) {
+      removeActiveClasses();
+      allLinks.forEach(link => {
+        if (link.getAttribute('href') === '#' + id) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // Intersection Observer para detetar secções visíveis
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setActiveLink(entry.target.getAttribute('id'));
+        }
+      });
+    }, { threshold: 0.35, rootMargin: '0px 0px -150px 0px' });
+    sections.forEach(s => observer.observe(s));
+
+    // ativar o primeiro por defeito se nada estiver visível
+    if (sections.length > 0 && !document.querySelector('.index-link.active')) {
+      setActiveLink(sections[0].getAttribute('id'));
+    }
+
+    // ----- rolagem suave ao clicar nos links (com fallback) -----
+    allLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').substring(1);
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth' });
+          // atualiza o active imediatamente (reforço)
+          setActiveLink(targetId);
+        }
+      });
+    });
+
+    // ----- botões de aceitação (demo) -----
+    acceptBtn.addEventListener('click', () => {
+      if (acceptCheck.checked) {
+        alert('✅ Termos aceites! Bem-vindo ao portal académico.');
+        // Aqui poderia redirecionar: window.location.href = '/dashboard';
+      } else {
+        alert('❌ Por favor, marque a caixa para aceitar os termos.');
+      }
+    });
+    cancelBtn.addEventListener('click', () => {
+      alert('⚡ Operação cancelada. Poderá aceitar os termos mais tarde.');
+    });
+
+    // atualizar progresso ao carregar
+    updateProgress();
+  })();
+</script>
+
+<!-- Pequeno ajuste para links do offcanvas fecharem corretamente (já têm data-bs-dismiss) -->
+</body>
+</html>

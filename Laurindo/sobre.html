@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISPCAN-Malanje | Sobre Nós</title>
+  <!-- Bootstrap 5.3 + Ícones + Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Leaflet (mapa interativo) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    /* ----- Variáveis e reset suave ----- */
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.15);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --hero-overlay: linear-gradient(135deg, rgba(0, 51, 102, 0.8) 0%, rgba(0, 153, 204, 0.7) 100%);
+      --card-hover: translateY(-10px) scale(1.02);
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body {
+      transition: background-color 0.3s, color 0.2s;
+    }
+    /* --- Efeito glass no header --- */
+    .navbar-modern {
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      background-color: var(--glass-bg) !important;
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    /* --- Hero com imagem de fundo e parallax --- */
+    .hero-section {
+      background: url('images/ISPCAN-BG.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: white;
+      padding: 150px 0 120px;
+      margin-top: -1px;
+      position: relative;
+    }
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      /*background: var(--hero-overlay);*/
+      z-index: 0;
+    }
+    .hero-section .container {
+      position: relative;
+      z-index: 2;
+    }
+    /* --- Cards flat com animação (reutilizados) --- */
+    .about-card {
+      border: none;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 15px 30px -12px rgba(0,0,0,0.2);
+      transition: var(--transition-smooth);
+      overflow: hidden;
+    }
+    [data-bs-theme="dark"] .about-card {
+      background: rgba(30, 30, 40, 0.8);
+      box-shadow: 0 15px 30px -12px rgba(0,150,255,0.15);
+    }
+    .about-card:hover {
+      transform: var(--card-hover);
+      box-shadow: 0 25px 40px -15px rgba(0,120,200,0.4);
+    }
+    /* --- Linha do tempo interativa --- */
+    .timeline {
+      position: relative;
+      padding: 20px 0;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      width: 4px;
+      height: 100%;
+      background: #0d6efd;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 50px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+    }
+    .timeline-item:nth-child(odd) {
+      flex-direction: row-reverse;
+    }
+    .timeline-item .timeline-content {
+      width: 45%;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(4px);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+    [data-bs-theme="dark"] .timeline-item .timeline-content {
+      background: rgba(30,30,40,0.8);
+      color: #eee;
+    }
+    .timeline-item .timeline-content:hover {
+      transform: scale(1.02);
+    }
+    .timeline-item .timeline-year {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      background: #0d6efd;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-weight: bold;
+      z-index: 2;
+    }
+    @media (max-width: 768px) {
+      .timeline::before { left: 20px; }
+      .timeline-item { flex-direction: column !important; }
+      .timeline-item .timeline-content { width: calc(100% - 50px); margin-left: 50px; }
+      .timeline-item .timeline-year { left: 20px; transform: translateX(0); }
+    }
+    /* --- Equipe: cards com overlay --- */
+    .team-card {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .team-card img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      transition: 0.4s;
+    }
+    .team-card:hover img {
+      transform: scale(1.05);
+    }
+    .team-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent);
+      color: white;
+      padding: 20px 15px 15px;
+      transform: translateY(100%);
+      transition: 0.4s;
+    }
+    .team-card:hover .team-info {
+      transform: translateY(0);
+    }
+    .team-info h5 { margin-bottom: 5px; }
+    .team-info p { margin-bottom: 0; font-size: 0.9rem; opacity: 0.9; }
+    /* --- Galeria infraestrutura --- */
+    .gallery-item {
+      border-radius: 15px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      height: 200px;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: 0.4s;
+    }
+    .gallery-item:hover img {
+      transform: scale(1.1);
+    }
+    .gallery-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(13,110,253,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: 0.3s;
+    }
+    .gallery-item:hover .gallery-overlay {
+      opacity: 1;
+    }
+    .gallery-overlay i {
+      font-size: 3rem;
+      color: white;
+    }
+    /* --- Botões filtro ativos (para equipe) --- */
+    .filter-btn.active {
+      background-color: #0d6efd;
+      color: white;
+      border-color: #0d6efd;
+    }
+    /* --- Depoimentos carrossel com foto --- */
+    .testimonial-card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(4px);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+    }
+    [data-bs-theme="dark"] .testimonial-card {
+      background: rgba(30,30,40,0.8);
+    }
+    .testimonial-card img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+    /* --- Parceiros --- */
+    .partner-logo {
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: grayscale(1);
+      transition: 0.3s;
+    }
+    .partner-logo:hover {
+      filter: grayscale(0);
+      transform: scale(1.05);
+    }
+    .partner-logo img {
+      max-width: 100%;
+      max-height: 60px;
+    }
+    /* --- Newsletter (mesmo estilo) --- */
+    .newsletter-section {
+      background-color: #0d6efd;
+      color: white;
+      padding: 60px 0;
+    }
+    [data-bs-theme="dark"] .newsletter-section {
+      background-color: #1a2b3c;
+    }
+    /* --- Botão flutuante chatbot e back-to-top (CORRIGIDO: sem sobreposição) --- */
+    .chatbot-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      background: #0d6efd;
+      border: none;
+      box-shadow: 0 10px 25px rgba(0,100,255,0.4);
+      font-size: 28px;
+      color: white;
+      cursor: pointer;
+      z-index: 1050;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chatbot-btn:hover {
+      transform: scale(1.1);
+      background: #0b5ed7;
+    }
+    .chatbot-btn img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+    }
+    .chat-window {
+      position: fixed;
+      bottom: 110px;
+      right: 30px;
+      width: 320px;
+      max-width: calc(100% - 60px);
+      background: white;
+      border-radius: 25px 25px 15px 15px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      z-index: 1050;
+      display: none;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    [data-bs-theme="dark"] .chat-window {
+      background: #2d2d3a;
+      color: #eee;
+      border-color: #444;
+    }
+    .chat-header {
+      background: #0d6efd;
+      color: white;
+      padding: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chat-body {
+      padding: 15px;
+      max-height: 250px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bot-msg, .user-msg {
+      padding: 10px 14px;
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .bot-msg {
+      background: #f0f2f5;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+    [data-bs-theme="dark"] .bot-msg {
+      background: #3a3a4a;
+      color: #fff;
+    }
+    .user-msg {
+      background: #0d6efd;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+    .chat-input-area {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
+    }
+    [data-bs-theme="dark"] .chat-input-area {
+      background: #222230;
+      border-color: #444;
+    }
+    .chat-input-area input {
+      flex: 1;
+      border-radius: 30px;
+      border: 1px solid #ccc;
+      padding: 8px 15px;
+      outline: none;
+    }
+    .chat-input-area button {
+      background: transparent;
+      border: none;
+      color: #0d6efd;
+      font-size: 22px;
+      margin-left: 8px;
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 120px; /* Aumentado para 120px (30 do chat + 65 altura + 25 espaçamento) */
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #0d6efd;
+      color: white;
+      border: none;
+      box-shadow: 0 5px 15px rgba(0,100,255,0.3);
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1040;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.8);
+    }
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+    .back-to-top:hover {
+      background: #0b5ed7;
+      transform: scale(1.1);
+    }
+    [data-bs-theme="dark"] .back-to-top {
+      background: #2c3e50;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+    [data-bs-theme="dark"] .back-to-top:hover {
+      background: #1e2b37;
+    }
+    .logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50px;
+    }
+    /* Interruptor de tema */
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+      margin-left: 10px;
+    }
+    .theme-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 24px;
+      width: 24px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+      z-index: 2;
+    }
+    input:checked + .slider {
+      background-color: #0d6efd;
+    }
+    input:checked + .slider:before {
+      transform: translateX(30px);
+    }
+    .slider i {
+      color: #f39c12;
+      font-size: 16px;
+      z-index: 1;
+      transition: 0.4s;
+    }
+    input:checked + .slider i:first-child {
+      opacity: 0.3;
+      color: #fff;
+    }
+    input:checked + .slider i:last-child {
+      opacity: 1;
+      color: #f1c40f;
+    }
+    .slider i:first-child {
+      margin-right: auto;
+    }
+    .slider i:last-child {
+      margin-left: auto;
+      opacity: 0.3;
+    }
+    input:checked + .slider i:last-child {
+      opacity: 1;
+    }
+    input:checked + .slider i:first-child {
+      opacity: 0.3;
+    }
+    
+    .robot {
+      width: 70px; 
+      height: 70px;
+      border-radius: 50px;
+    }
+  </style>
+</head>
+<body data-bs-theme="light">
+  <!-- CABEÇALHO MODERNO (mantido) -->
+  <nav class="navbar navbar-expand-lg navbar-modern sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3" href="#">
+        <img class="logo" src="images/ISPCAN-rbg.png" />ISPCAN-Malanje
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-home"></i>Home</a></li>
+          <li class="nav-item"><a class="nav-link active" href="#"><i class="fas fa-info-circle"></i>Sobre</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="fas fa-book"></i>Cursos</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="engenharia.html">Engenharias</a></li>
+              <li><a class="dropdown-item" href="ciencias.html">Ciências Sociais</a></li>
+              <li><a class="dropdown-item" href="saude.html">Saúde</a></li>
+            </ul>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-newspaper"></i>Notícias</a></li>
+          <li class="nav-item"><a class="nav-link" href="contacto.html"><i class="fas fa-envelope"></i>Contacto</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          <!-- Botões de Login e Cadastrar (outline) -->
+          <a href="login.html" class="btn btn-outline-success">
+            <i class="fas fa-sign-in-alt"></i>
+            Login
+          </a>
+          <a href="#" class="btn btn-outline-primary">
+            <i class="fas fa-user-plus"></i>
+            Cadastrar
+          </a>
+          <!-- Idioma -->
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary rounded-circle" type="button" data-bs-toggle="dropdown">
+              <i class="fas fa-globe"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#" data-lang="pt">🇧🇷 Português</a></li>
+              <li><a class="dropdown-item" href="#" data-lang="en">🇺🇸 English</a></li>
+              <li><a class="dropdown-item" href="#" data-lang="es">🇪🇸 Español</a></li>
+            </ul>
+          </div>
+          <!-- Tema -->
+          <label class="theme-switch">
+            <input type="checkbox" id="themeToggle">
+            <span class="slider">
+              <i class="fas fa-sun"></i>
+              <i class="fas fa-moon"></i>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SOBRE (com parallax) -->
+  <section class="hero-section d-flex align-items-center">
+    <div class="container text-center">
+      <h1 class="display-3 fw-bold mb-4" data-i18n="about_hero_title">Conheça a ISPCAN-Malanje</h1>
+      <p class="lead mb-5 w-75 mx-auto" data-i18n="about_hero_subtitle">Mais de 50 anos formando profissionais e transformando realidades através da educação de qualidade.</p>
+    </div>
+  </section>
+
+  <!-- NOSSA HISTÓRIA (com linha do tempo interativa) -->
+  <section class="py-5" id="historia">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="history_title">Nossa História</h2>
+      <div class="timeline">
+        <!-- Item 1 -->
+        <div class="timeline-item">
+          <div class="timeline-year">1972</div>
+          <div class="timeline-content">
+            <h5>Fundação</h5>
+            <p data-i18n="history_1972">Início das atividades como Instituto Superior Politécnico, com os cursos de Engenharia e Economia.</p>
+          </div>
+        </div>
+        <!-- Item 2 -->
+        <div class="timeline-item">
+          <div class="timeline-year">1985</div>
+          <div class="timeline-content">
+            <h5>Expansão</h5>
+            <p data-i18n="history_1985">Criação do campus de Malanje e dos departamentos de Saúde e Ciências Sociais.</p>
+          </div>
+        </div>
+        <!-- Item 3 -->
+        <div class="timeline-item">
+          <div class="timeline-year">2000</div>
+          <div class="timeline-content">
+            <h5>Reconhecimento</h5>
+            <p data-i18n="history_2000">Primeira colocação no ranking nacional de produtividade científica.</p>
+          </div>
+        </div>
+        <!-- Item 4 -->
+        <div class="timeline-item">
+          <div class="timeline-year">2024</div>
+          <div class="timeline-content">
+            <h5>Inovação</h5>
+            <p data-i18n="history_2024">Lançamento do campus digital e parcerias com universidades europeias.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MISSÃO, VISÃO E VALORES (cards) -->
+  <section class="py-5 bg-light" id="missao">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="mvv_title">Missão, Visão e Valores</h2>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="about-card h-100 p-4 text-center">
+            <i class="fas fa-compass fa-4x mb-3 text-primary"></i>
+            <h4 data-i18n="mission_title">Missão</h4>
+            <p data-i18n="mission_text">Produzir e disseminar conhecimento, formando profissionais éticos e inovadores para o desenvolvimento sustentável da sociedade.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="about-card h-100 p-4 text-center">
+            <i class="fas fa-eye fa-4x mb-3 text-primary"></i>
+            <h4 data-i18n="vision_title">Visão</h4>
+            <p data-i18n="vision_text">Ser referência nacional e internacional em ensino, pesquisa e extensão até 2030, com reconhecimento pela inovação acadêmica.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="about-card h-100 p-4 text-center">
+            <i class="fas fa-heart fa-4x mb-3 text-primary"></i>
+            <h4 data-i18n="values_title">Valores</h4>
+            <p data-i18n="values_text">Ética, inclusão, sustentabilidade, excelência, compromisso social e respeito à diversidade.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EQUIPE / CORPO DOCENTE (com filtro) -->
+  <section class="py-5" id="equipe">
+    <div class="container">
+      <h2 class="text-center mb-4 fw-bold" data-i18n="team_title">Corpo Docente</h2>
+      <!-- Filtros -->
+      <div class="d-flex justify-content-center gap-2 mb-5 flex-wrap">
+        <button class="btn btn-outline-primary filter-btn active" data-filter="all">Todos</button>
+        <button class="btn btn-outline-primary filter-btn" data-filter="eng">Engenharias</button>
+        <button class="btn btn-outline-primary filter-btn" data-filter="saude">Saúde</button>
+        <button class="btn btn-outline-primary filter-btn" data-filter="soc">Ciências Sociais</button>
+      </div>
+      <div class="row g-4" id="teamContainer">
+        <!-- Professor 1 (Eng) -->
+        <div class="col-lg-3 col-md-6 team-member" data-category="eng">
+          <div class="team-card">
+            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Prof. António">
+            <div class="team-info">
+              <h5>Prof. António Laurindo</h5>
+              <p>Engenharia Informática · Doutor em IA</p>
+              <small><i class="fab fa-linkedin me-1"></i> linkedin.com/in/antonio</small>
+            </div>
+          </div>
+        </div>
+        <!-- Professor 2 (Saude) -->
+        <div class="col-lg-3 col-md-6 team-member" data-category="saude">
+          <div class="team-card">
+            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profa. Maria">
+            <div class="team-info">
+              <h5>Profa. Maria Silva</h5>
+              <p>Enfermagem · Especialista em UTI</p>
+              <small><i class="fab fa-linkedin me-1"></i> linkedin.com/in/maria</small>
+            </div>
+          </div>
+        </div>
+        <!-- Professor 3 (Soc) -->
+        <div class="col-lg-3 col-md-6 team-member" data-category="soc">
+          <div class="team-card">
+            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Prof. João">
+            <div class="team-info">
+              <h5>Prof. João Mendes</h5>
+              <p>Direito · Mestre em Direito Constitucional</p>
+              <small><i class="fab fa-linkedin me-1"></i> linkedin.com/in/joao</small>
+            </div>
+          </div>
+        </div>
+        <!-- Professor 4 (Eng) -->
+        <div class="col-lg-3 col-md-6 team-member" data-category="eng">
+          <div class="team-card">
+            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Profa. Ana">
+            <div class="team-info">
+              <h5>Profa. Ana Paula</h5>
+              <p>Eng. Civil · PhD em Estruturas</p>
+              <small><i class="fab fa-linkedin me-1"></i> linkedin.com/in/ana</small>
+            </div>
+          </div>
+        </div>
+        <!-- Professor 5 (Saude) -->
+        <div class="col-lg-3 col-md-6 team-member" data-category="saude">
+          <div class="team-card">
+            <img src="https://randomuser.me/api/portraits/men/52.jpg" alt="Prof. Carlos">
+            <div class="team-info">
+              <h5>Prof. Carlos Alberto</h5>
+              <p>Fisioterapia · Mestre em Reabilitação</p>
+              <small><i class="fab fa-linkedin me-1"></i> linkedin.com/in/carlos</small>
+            </div>
+          </div>
+        </div>
+        <!-- Professor 6 (Soc) -->
+        <div class="col-lg-3 col-md-6 team-member" data-category="soc">
+          <div class="team-card">
+            <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="Profa. Luísa">
+            <div class="team-info">
+              <h5>Profa. Luísa Costa</h5>
+              <p>Economia · Doutora em Desenvolvimento</p>
+              <small><i class="fab fa-linkedin me-1"></i> linkedin.com/in/luisa</small>
+            </div>
+          </div>
+        </div>
+        <!-- Professor 7 (Eng) -->
+        <div class="col-lg-3 col-md-6 team-member" data-category="eng">
+          <div class="team-card">
+            <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="Prof. Pedro">
+            <div class="team-info">
+              <h5>Prof. Pedro Soares</h5>
+              <p>Telecomunicações · PhD em Redes</p>
+              <small><i class="fab fa-linkedin me-1"></i> linkedin.com/in/pedro</small>
+            </div>
+          </div>
+        </div>
+        <!-- Professor 8 (Saude) -->
+        <div class="col-lg-3 col-md-6 team-member" data-category="saude">
+          <div class="team-card">
+            <img src="https://randomuser.me/api/portraits/women/17.jpg" alt="Profa. Clara">
+            <div class="team-info">
+              <h5>Profa. Clara Lima</h5>
+              <p>Psicologia · Mestre em Clínica</p>
+              <small><i class="fab fa-linkedin me-1"></i> linkedin.com/in/clara</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFRAESTRUTURA / CAMPUS (galeria interativa) -->
+  <section class="py-5 bg-light" id="infra">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="infra_title">Nosso Campus</h2>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=2086&auto=format&fit=crop">
+            <img src="https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=2086&auto=format&fit=crop" alt="Biblioteca">
+            <div class="gallery-overlay"><i class="fas fa-search-plus"></i></div>
+          </div>
+          <p class="mt-2 text-center" data-i18n="infra_library">Biblioteca Central</p>
+        </div>
+        <div class="col-md-4">
+          <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop">
+            <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop" alt="Auditório">
+            <div class="gallery-overlay"><i class="fas fa-search-plus"></i></div>
+          </div>
+          <p class="mt-2 text-center" data-i18n="infra_auditorium">Auditório Principal</p>
+        </div>
+        <div class="col-md-4">
+          <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="https://images.unsplash.com/photo-1581093458791-9f3c3b8d8c4b?q=80&w=2070&auto=format&fit=crop">
+            <img src="https://images.unsplash.com/photo-1581093458791-9f3c3b8d8c4b?q=80&w=2070&auto=format&fit=crop" alt="Laboratório">
+            <div class="gallery-overlay"><i class="fas fa-search-plus"></i></div>
+          </div>
+          <p class="mt-2 text-center" data-i18n="infra_lab">Laboratórios de Informática</p>
+        </div>
+        <div class="col-md-4">
+          <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop">
+            <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop" alt="Área de Convivência">
+            <div class="gallery-overlay"><i class="fas fa-search-plus"></i></div>
+          </div>
+          <p class="mt-2 text-center" data-i18n="infra_lounge">Área de Convivência</p>
+        </div>
+        <div class="col-md-4">
+          <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="https://images.unsplash.com/photo-1519452575417-564c1401ecc0?q=80&w=2070&auto=format&fit=crop">
+            <img src="https://images.unsplash.com/photo-1519452575417-564c1401ecc0?q=80&w=2070&auto=format&fit=crop" alt="Quadras">
+            <div class="gallery-overlay"><i class="fas fa-search-plus"></i></div>
+          </div>
+          <p class="mt-2 text-center" data-i18n="infra_sports">Complexo Esportivo</p>
+        </div>
+        <div class="col-md-4">
+          <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop">
+            <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop" alt="Entrada">
+            <div class="gallery-overlay"><i class="fas fa-search-plus"></i></div>
+          </div>
+          <p class="mt-2 text-center" data-i18n="infra_entrance">Entrada Principal</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEPOIMENTOS E RECONHECIMENTOS (carrossel) -->
+  <section class="py-5" id="depoimentos">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="testimonials_title">O que dizem nossos alunos</h2>
+      <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="testimonial-card">
+              <img src="https://randomuser.me/api/portraits/women/62.jpg" alt="Aluna">
+              <p class="fst-italic">"A ISPCAN mudou minha vida! Professores dedicados e infraestrutura de ponta."</p>
+              <h6>Ana Carolina, Engenharia Civil</h6>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="testimonial-card">
+              <img src="https://randomuser.me/api/portraits/men/86.jpg" alt="Aluno">
+              <p class="fst-italic">"Os laboratórios de saúde são incríveis. Saio preparado para o mercado."</p>
+              <h6>João Pedro, Enfermagem</h6>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="testimonial-card">
+              <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Aluna">
+              <p class="fst-italic">"Intercâmbio para Portugal foi uma experiência única. A universidade oferece muitas oportunidades."</p>
+              <h6>Mariana Souza, Economia</h6>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon bg-primary rounded-circle p-3" aria-hidden="true"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon bg-primary rounded-circle p-3" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARCEIROS E COLABORAÇÕES -->
+  <section class="py-5 bg-light" id="parceiros">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold" data-i18n="partners_title">Parceiros e Colaborações</h2>
+      <div class="row align-items-center justify-content-center g-4">
+        <div class="col-4 col-md-2"><div class="partner-logo"><img src="https://via.placeholder.com/150x60?text=UNESCO" alt="UNESCO"></div></div>
+        <div class="col-4 col-md-2"><div class="partner-logo"><img src="https://via.placeholder.com/150x60?text=MIT" alt="MIT"></div></div>
+        <div class="col-4 col-md-2"><div class="partner-logo"><img src="https://via.placeholder.com/150x60?text=Oxford" alt="Oxford"></div></div>
+        <div class="col-4 col-md-2"><div class="partner-logo"><img src="https://via.placeholder.com/150x60?text=Camões" alt="Camões"></div></div>
+        <div class="col-4 col-md-2"><div class="partner-logo"><img src="https://via.placeholder.com/150x60?text=CNPq" alt="CNPq"></div></div>
+        <div class="col-4 col-md-2"><div class="partner-logo"><img src="https://via.placeholder.com/150x60?text=Google" alt="Google"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER (mantida) -->
+  <section class="newsletter-section">
+    <div class="container text-center">
+      <h3 class="fw-bold mb-3" data-i18n="newsletter_title">Assine nossa Newsletter</h3>
+      <p class="mb-4" data-i18n="newsletter_subtitle">Receba novidades, eventos e dicas exclusivas no seu e-mail.</p>
+      <div class="newsletter-form">
+        <div class="input-group input-group-lg">
+          <input type="email" class="form-control" id="newsletterEmail" placeholder="Seu melhor e-mail">
+          <button class="btn btn-light" type="button" id="subscribeBtn"><i class="fas fa-paper-plane me-2"></i><span data-i18n="subscribe">Inscrever</span></button>
+        </div>
+        <div id="newsletterFeedback" class="mt-3 small"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHATBOT FLUTUANTE (corrigido) -->
+  <div class="chatbot-btn" id="chatbotBtn">
+    <!-- Removido link para chatbot.html -->
+    <img class="robot" src="images/IA-ISP.png" alt="Chatbot" />
+  </div>
+
+  <!-- Janela do Chatbot (agora ativa) -->
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <i class="fas fa-robot"></i> Assistente Virtual
+      <button class="btn-close btn-close-white ms-auto" id="closeChat" aria-label="Close"></button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="bot-msg">Olá! Sou o assistente da ISPCAN. Posso ajudar com informações sobre cursos, inscrições ou eventos?</div>
+      <div class="user-msg">Quero saber sobre bolsas de estudo</div>
+      <div class="bot-msg">Temos bolsas de mérito, monitoria e parcerias com empresas. Qual seu curso de interesse?</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" placeholder="Digite sua mensagem..." id="chatInput">
+      <button id="sendMsg"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- BOTÃO VOLTAR AO TOPO (corrigido) -->
+  <button class="back-to-top" id="backToTop" title="Voltar ao topo">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <!-- RODAPÉ (mantido) -->
+  <footer class="bg-dark text-white pt-5 pb-4">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <h5><img src="images/ISPCAN-rbg.png" style="border-radius: 50px; width: 30px; height: 30px;" /> ISPCAN-Malanje</h5>
+          <p data-i18n="footer_about">Excelência em ensino, pesquisa e extensão há mais de 50 anos. Transformando vidas pelo conhecimento.</p>
+          <div class="d-flex gap-3 fs-4">
+            <a href="#" class="text-primary"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="text-warning"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="text-primary"><i class="fab fa-linkedin"></i></a>
+            <a href="#" class="text-danger"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <h6 data-i18n="quick_links">Links rápidos</h6>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="about">Sobre</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="library">Biblioteca</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="student_portal">Portal do aluno</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none" data-i18n="jobs">Trabalhe conosco</a></li>
+          </ul>
+        </div>
+        <div class="col-md-3">
+          <h6 data-i18n="contact">Contacto</h6>
+          <p class="text-white-50"><i class="fas fa-phone me-2"></i>(11) 1234-5678</p>
+          <p class="text-white-50"><i class="fas fa-envelope me-2"></i>contato@ispcan.edu</p>
+          <p class="text-white-50"><i class="fas fa-clock me-2"></i>Seg-Sex: 8h às 20h</p>
+        </div>
+        <div class="col-md-3">
+          <h6 data-i18n="location">Localização</h6>
+          <div class="card location-card">
+            <div id="map" style="height: 150px; width: 100%;"></div>
+            <div class="card-body p-2 small text-white">
+              <i class="fas fa-map-pin text-primary me-1"></i> Av. Universitária, 1000, Malanje, Angola<br>
+              <i class="fas fa-phone me-1"></i> +244 123 456 789<br>
+              <a href="https://maps.google.com/?q=Av.+Universitária,+1000,+Malanje,+Angola" target="_blank" class="text-white-50 text-decoration-none">
+                <i class="fas fa-external-link-alt me-1"></i>Ver no Google Maps
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr class="my-4 bg-secondary">
+      <div class="text-center text-white-50">
+        <small>© 2025 ISPCAN-Malanje. Todos os direitos reservados. Desenvolvido Por: <span class="m-lg-1" style="color: blue"><b>António Laurindo Paulo</b></span></small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal para galeria de imagens (simples) -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body p-0">
+          <img src="" id="modalImage" class="img-fluid rounded-3" alt="Ampliada">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function() {
+      // ----- TEMA -----
+      const themeToggle = document.getElementById('themeToggle');
+      const currentTheme = localStorage.getItem('theme') || 'light';
+      document.body.setAttribute('data-bs-theme', currentTheme);
+      themeToggle.checked = (currentTheme === 'dark');
+      themeToggle.addEventListener('change', function() {
+        let theme = this.checked ? 'dark' : 'light';
+        document.body.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+      });
+
+      // ----- FILTRO EQUIPE (substitui o filtro de cursos) -----
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const teamMembers = document.querySelectorAll('.team-member');
+      
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          const filter = this.getAttribute('data-filter');
+          
+          teamMembers.forEach(member => {
+            if (filter === 'all' || member.getAttribute('data-category') === filter) {
+              member.style.display = 'block';
+            } else {
+              member.style.display = 'none';
+            }
+          });
+        });
+      });
+
+      // ----- TRADUÇÃO (i18n) com novos textos -----
+      const translations = {
+        pt: {
+          about_hero_title: 'Conheça a ISPCAN-Malanje',
+          about_hero_subtitle: 'Mais de 50 anos formando profissionais e transformando realidades através da educação de qualidade.',
+          history_title: 'Nossa História',
+          history_1972: 'Início das atividades como Instituto Superior Politécnico, com os cursos de Engenharia e Economia.',
+          history_1985: 'Criação do campus de Malanje e dos departamentos de Saúde e Ciências Sociais.',
+          history_2000: 'Primeira colocação no ranking nacional de produtividade científica.',
+          history_2024: 'Lançamento do campus digital e parcerias com universidades europeias.',
+          mvv_title: 'Missão, Visão e Valores',
+          mission_title: 'Missão',
+          mission_text: 'Produzir e disseminar conhecimento, formando profissionais éticos e inovadores para o desenvolvimento sustentável da sociedade.',
+          vision_title: 'Visão',
+          vision_text: 'Ser referência nacional e internacional em ensino, pesquisa e extensão até 2030, com reconhecimento pela inovação acadêmica.',
+          values_title: 'Valores',
+          values_text: 'Ética, inclusão, sustentabilidade, excelência, compromisso social e respeito à diversidade.',
+          team_title: 'Corpo Docente',
+          infra_title: 'Nosso Campus',
+          infra_library: 'Biblioteca Central',
+          infra_auditorium: 'Auditório Principal',
+          infra_lab: 'Laboratórios de Informática',
+          infra_lounge: 'Área de Convivência',
+          infra_sports: 'Complexo Esportivo',
+          infra_entrance: 'Entrada Principal',
+          testimonials_title: 'O que dizem nossos alunos',
+          partners_title: 'Parceiros e Colaborações',
+          newsletter_title: 'Assine nossa Newsletter',
+          newsletter_subtitle: 'Receba novidades, eventos e dicas exclusivas no seu e-mail.',
+          subscribe: 'Inscrever',
+          footer_about: 'Excelência em ensino, pesquisa e extensão há mais de 50 anos. Transformando vidas pelo conhecimento.',
+          quick_links: 'Links rápidos',
+          about: 'Sobre',
+          library: 'Biblioteca',
+          student_portal: 'Portal do aluno',
+          jobs: 'Trabalhe conosco',
+          contact: 'Contacto',
+          location: 'Localização'
+        },
+        en: {
+          about_hero_title: 'Meet ISPCAN-Malanje',
+          about_hero_subtitle: 'Over 50 years forming professionals and transforming realities through quality education.',
+          history_title: 'Our History',
+          history_1972: 'Started as a Polytechnic Institute with Engineering and Economics courses.',
+          history_1985: 'Creation of the Malanje campus and Health and Social Sciences departments.',
+          history_2000: 'First place in the national scientific productivity ranking.',
+          history_2024: 'Launch of the digital campus and partnerships with European universities.',
+          mvv_title: 'Mission, Vision and Values',
+          mission_title: 'Mission',
+          mission_text: 'To produce and disseminate knowledge, training ethical and innovative professionals for sustainable development.',
+          vision_title: 'Vision',
+          vision_text: 'To be a national and international reference in teaching, research and extension by 2030.',
+          values_title: 'Values',
+          values_text: 'Ethics, inclusion, sustainability, excellence, social commitment and respect for diversity.',
+          team_title: 'Faculty',
+          infra_title: 'Our Campus',
+          infra_library: 'Central Library',
+          infra_auditorium: 'Main Auditorium',
+          infra_lab: 'Computer Labs',
+          infra_lounge: 'Lounge Area',
+          infra_sports: 'Sports Complex',
+          infra_entrance: 'Main Entrance',
+          testimonials_title: 'What our students say',
+          partners_title: 'Partners and Collaborations',
+          newsletter_title: 'Subscribe to our Newsletter',
+          newsletter_subtitle: 'Receive news, events and exclusive tips in your email.',
+          subscribe: 'Subscribe',
+          footer_about: 'Excellence in teaching, research and extension for over 50 years. Transforming lives through knowledge.',
+          quick_links: 'Quick links',
+          about: 'About',
+          library: 'Library',
+          student_portal: 'Student portal',
+          jobs: 'Work with us',
+          contact: 'Contact',
+          location: 'Location'
+        },
+        es: {
+          about_hero_title: 'Conoce ISPCAN-Malanje',
+          about_hero_subtitle: 'Más de 50 años formando profesionales y transformando realidades a través de la educación de calidad.',
+          history_title: 'Nuestra Historia',
+          history_1972: 'Inicio como Instituto Politécnico Superior con cursos de Ingeniería y Economía.',
+          history_1985: 'Creación del campus de Malanje y los departamentos de Salud y Ciencias Sociales.',
+          history_2000: 'Primer puesto en el ranking nacional de productividad científica.',
+          history_2024: 'Lanzamiento del campus digital y alianzas con universidades europeas.',
+          mvv_title: 'Misión, Visión y Valores',
+          mission_title: 'Misión',
+          mission_text: 'Producir y difundir conocimiento, formando profesionales éticos e innovadores para el desarrollo sostenible.',
+          vision_title: 'Visión',
+          vision_text: 'Ser referente nacional e internacional en docencia, investigación y extensión para 2030.',
+          values_title: 'Valores',
+          values_text: 'Ética, inclusión, sostenibilidad, excelencia, compromiso social y respeto a la diversidad.',
+          team_title: 'Profesorado',
+          infra_title: 'Nuestro Campus',
+          infra_library: 'Biblioteca Central',
+          infra_auditorium: 'Auditorio Principal',
+          infra_lab: 'Laboratorios de Informática',
+          infra_lounge: 'Zona de Estar',
+          infra_sports: 'Complejo Deportivo',
+          infra_entrance: 'Entrada Principal',
+          testimonials_title: 'Lo que dicen nuestros alumnos',
+          partners_title: 'Socios y Colaboraciones',
+          newsletter_title: 'Suscríbete a nuestro Newsletter',
+          newsletter_subtitle: 'Recibe novedades, eventos y consejos exclusivos en tu correo.',
+          subscribe: 'Suscribir',
+          footer_about: 'Excelencia en docencia, investigación y extensión por más de 50 años. Transformando vidas a través del conocimiento.',
+          quick_links: 'Enlaces rápidos',
+          about: 'Sobre',
+          library: 'Biblioteca',
+          student_portal: 'Portal del alumno',
+          jobs: 'Trabaja con nosotros',
+          contact: 'Contacto',
+          location: 'Ubicación'
+        }
+      };
+
+      function setLanguage(lang) {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (translations[lang] && translations[lang][key]) {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+              el.placeholder = translations[lang][key];
+            } else {
+              el.textContent = translations[lang][key];
+            }
+          }
+        });
+        localStorage.setItem('preferredLang', lang);
+      }
+
+      const savedLang = localStorage.getItem('preferredLang') || 'pt';
+      setLanguage(savedLang);
+
+      document.querySelectorAll('[data-lang]').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const lang = e.target.closest('[data-lang]').getAttribute('data-lang');
+          setLanguage(lang);
+        });
+      });
+
+      // ----- NEWSLETTER (localStorage) -----
+      const subscribeBtn = document.getElementById('subscribeBtn');
+      const newsletterEmail = document.getElementById('newsletterEmail');
+      const newsletterFeedback = document.getElementById('newsletterFeedback');
+      let subscribers = JSON.parse(localStorage.getItem('newsletter_emails')) || [];
+
+      subscribeBtn.addEventListener('click', () => {
+        const email = newsletterEmail.value.trim();
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+          newsletterFeedback.innerHTML = '<span class="text-warning">Por favor, insira um e-mail válido.</span>';
+          return;
+        }
+        if (subscribers.includes(email)) {
+          newsletterFeedback.innerHTML = '<span class="text-warning">Este e-mail já está inscrito.</span>';
+        } else {
+          subscribers.push(email);
+          localStorage.setItem('newsletter_emails', JSON.stringify(subscribers));
+          newsletterFeedback.innerHTML = '<span class="text-success">✓ Inscrição realizada com sucesso!</span>';
+          newsletterEmail.value = '';
+        }
+      });
+
+      // ----- CHATBOT (agora funcional) -----
+      const chatbotBtn = document.getElementById('chatbotBtn');
+      const chatWindow = document.getElementById('chatWindow');
+      const closeChat = document.getElementById('closeChat');
+      const sendBtn = document.getElementById('sendMsg');
+      const chatInput = document.getElementById('chatInput');
+      const chatBody = document.getElementById('chatBody');
+
+      function openChat() {
+        chatWindow.style.display = 'block';
+      }
+      function closeChatFunc() {
+        chatWindow.style.display = 'none';
+      }
+
+      chatbotBtn.addEventListener('click', openChat);
+      closeChat.addEventListener('click', closeChatFunc);
+
+      function sendMessage() {
+        const msg = chatInput.value.trim();
+        if (msg === '') return;
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-msg';
+        userDiv.textContent = msg;
+        chatBody.appendChild(userDiv);
+        chatInput.value = '';
+        setTimeout(() => {
+          const botDiv = document.createElement('div');
+          botDiv.className = 'bot-msg';
+          botDiv.textContent = 'Obrigado pela mensagem! Um atendente do ISPCAN responderá em breve.';
+          chatBody.appendChild(botDiv);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }, 500);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+
+      sendBtn.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+
+      window.addEventListener('click', (e) => {
+        if (!chatbotBtn.contains(e.target) && !chatWindow.contains(e.target) && chatWindow.style.display === 'block') {
+          closeChatFunc();
+        }
+      });
+
+      // ----- BACK TO TOP -----
+      const backToTop = document.getElementById('backToTop');
+      window.addEventListener('scroll', () => {
+        backToTop.classList.toggle('show', window.scrollY > 300);
+      });
+      backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // ----- MODAL GALERIA (simples) -----
+      const imageModal = document.getElementById('imageModal');
+      const modalImage = document.getElementById('modalImage');
+      document.querySelectorAll('.gallery-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const imgSrc = this.getAttribute('data-img');
+          modalImage.src = imgSrc;
+        });
+      });
+
+      // ----- MAPA (Leaflet) -----
+      var map = L.map('map').setView([-9.5515, 16.3408], 13);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+      L.marker([-9.5515, 16.3408]).addTo(map)
+        .bindPopup('ISPCAN-Malanje<br>Av. Universitária, 1000')
+        .openPopup();
+    })();
+  </script>
+</body>
+</html>
