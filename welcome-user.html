@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 IA Assistente - Sistema de Segurança</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            font-family: "Times New Roman", Times, serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            transition: filter 0.8s;
+        }
+
+        /* ====== OVERLAY DA IA ====== */
+        #iaOverlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, #0a0a2e 0%, #000000 100%);
+            z-index: 200000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 1;
+            transition: opacity 1.5s ease-out;
+            pointer-events: all;
+        }
+
+        #iaOverlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #iaOverlay .ia-container {
+            background: rgba(10, 10, 30, 0.9);
+            border: 2px solid #00ff88;
+            border-radius: 20px;
+            padding: 40px 50px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 0 60px rgba(0, 255, 136, 0.2), inset 0 0 60px rgba(0, 255, 136, 0.05);
+            text-align: center;
+            animation: iaPulse 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes iaPulse {
+            0%, 100% { box-shadow: 0 0 60px rgba(0, 255, 136, 0.2), inset 0 0 60px rgba(0, 255, 136, 0.05); }
+            50% { box-shadow: 0 0 80px rgba(0, 255, 136, 0.3), inset 0 0 80px rgba(0, 255, 136, 0.1); }
+        }
+
+        #iaOverlay .ia-icon {
+            font-size: 80px;
+            animation: floatIcon 2s ease-in-out infinite;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        #iaOverlay .ia-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        #iaOverlay .ia-subtitle {
+            font-size: 1.1rem;
+            color: #88ffcc;
+            opacity: 0.8;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        #iaOverlay .ia-message {
+            font-size: 1.1rem;
+            color: #aaffdd;
+            line-height: 1.8;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 10px;
+            border-left: 3px solid #00ff88;
+            text-align: left;
+            margin-bottom: 25px;
+            min-height: 80px;
+        }
+
+        #iaOverlay .ia-message .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.1em;
+            background: #00ff88;
+            animation: blink 0.7s step-end infinite;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+        }
+
+        #iaOverlay .ia-button {
+            background: transparent;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 12px 40px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: "Times New Roman", Times, serif;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #iaOverlay .ia-button:hover {
+            background: rgba(0, 255, 136, 0.1);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+            transform: scale(1.02);
+        }
+
+        #iaOverlay .ia-button::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, #00ff88, transparent, #00ff88);
+            background-size: 200% 200%;
+            animation: borderGlow 3s linear infinite;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            border-radius: 5px;
+        }
+
+        #iaOverlay .ia-loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-top: 2px solid #00ff88;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #iaOverlay .ia-particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff88;
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes particleFloat {
+            0% { opacity: 0; transform: translateY(0) scale(0); }
+            20% { opacity: 0.5; }
+            80% { opacity: 0.5; }
+            100% { opacity: 0; transform: translateY(-100px) scale(1); }
+        }
+
+        /* ====== OVERLAY PRINCIPAL BLACK HAT ====== */
+        #blackHatOverlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.97) 0%, rgba(139,0,0,0.6) 100%);
+            z-index: 100000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s;
+        }
+
+        #blackHatOverlay.active {
+            display: flex;
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #blackHatOverlay .hacker-symbol {
+            font-size: 120px;
+            color: #ff0000;
+            text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000, 0 0 120px #8B0000;
+            animation: pulseGlow 0.5s ease-in-out infinite alternate;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000, 0 0 120px #8B0000; }
+            100% { text-shadow: 0 0 50px #ff0000, 0 0 100px #ff0000, 0 0 200px #8B0000; }
+        }
+
+        #blackHatOverlay .warning-text {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff0000;
+            text-transform: uppercase;
+            animation: glitch 0.3s linear infinite;
+            text-align: center;
+            letter-spacing: 8px;
+            text-shadow: 0 0 20px #ff0000;
+        }
+
+        #blackHatOverlay .sub-text {
+            font-size: 1.2rem;
+            color: #ff3333;
+            margin-top: 20px;
+            animation: blink 0.8s step-end infinite;
+            letter-spacing: 4px;
+        }
+
+        #blackHatOverlay .threat-text {
+            font-size: 1.8rem;
+            color: #ff0000;
+            margin-top: 30px;
+            animation: glitch 0.5s linear infinite;
+            letter-spacing: 6px;
+            text-shadow: 0 0 30px #ff0000;
+            font-weight: bold;
+            background: rgba(0,0,0,0.8);
+            padding: 15px 30px;
+            border: 2px solid #ff0000;
+            border-radius: 5px;
+        }
+
+        #blackHatOverlay .threat-text .highlight {
+            color: #ff6666;
+            animation: blink 0.3s step-end infinite;
+        }
+
+        #blackHatOverlay .binary-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            opacity: 0.2;
+            font-family: monospace;
+            font-size: 14px;
+            color: #ff0000;
+            line-height: 1.2;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(to right, #8B0000, #4B0000, #8B0000);
+            background-size: 200% 100%;
+            animation: gradientMove 3s linear infinite;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 4px solid #ff0000;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 0 30px rgba(255,0,0,0.3);
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+
+        .glitch {
+            animation: glitch 0.6s linear infinite;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); opacity: 1; }
+            10% { transform: translate(-4px, 2px); }
+            20% { transform: translate(4px, -2px); }
+            30% { transform: translate(-2px, 4px); }
+            40% { transform: translate(2px, -4px); }
+            50% { transform: translate(-3px, 3px); }
+            60% { transform: translate(3px, -3px); }
+            70% { transform: translate(-2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            90% { transform: translate(-1px, 1px); }
+        }
+
+        /* SCANLINE */
+        .scanline {
+            position: fixed;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to bottom, transparent, rgba(255,0,0,0.6), transparent);
+            box-shadow: 0 0 20px red;
+            animation: scan 4s linear infinite;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { top: -100%; }
+            100% { top: 300%; }
+        }
+
+        /* PIXEL GRID */
+        .pixel-grid {
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,0,0,0.06) 4px, rgba(255,0,0,0.06) 8px);
+            opacity: 0;
+            transition: opacity 1.5s;
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        .pixel-grid.fragment {
+            background: 
+                repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,0,0,0.15) 3px, rgba(255,0,0,0.15) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,0,0,0.15) 3px, rgba(255,0,0,0.15) 4px);
+            animation: fragmentPulse 0.1s step-start infinite;
+        }
+
+        @keyframes fragmentPulse {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.02) rotate(0.5deg); }
+            50% { transform: scale(0.98) rotate(-0.5deg); }
+            75% { transform: scale(1.01) rotate(0.3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* CORRUPTED TEXT */
+        .corrupted-text {
+            animation: corrupted 0.08s linear infinite;
+        }
+
+        @keyframes corrupted {
+            0% { transform: translate(0); filter: blur(0px); }
+            25% { transform: translate(-3px, 3px); filter: blur(1px); }
+            50% { transform: translate(3px, -3px); filter: blur(0px); }
+            75% { transform: translate(-1px, -1px); filter: blur(2px); }
+            100% { transform: translate(0); filter: blur(0px); }
+        }
+
+        .blink {
+            animation: blink 0.5s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .static-overlay {
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, 
+                rgba(0,0,0,0.4) 0px, 
+                rgba(0,0,0,0.4) 1px, 
+                transparent 1px, 
+                transparent 3px);
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0;
+            transition: opacity 0.8s;
+        }
+
+        .static-overlay.fragment {
+            background: 
+                repeating-linear-gradient(0deg, rgba(255,0,0,0.1) 0px, rgba(255,0,0,0.1) 1px, transparent 1px, transparent 2px),
+                repeating-linear-gradient(90deg, rgba(255,0,0,0.05) 0px, rgba(255,0,0,0.05) 1px, transparent 1px, transparent 3px);
+            animation: staticNoise 0.05s step-start infinite;
+        }
+
+        @keyframes staticNoise {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+            100% { opacity: 0.3; }
+        }
+
+        .fade-text {
+            animation: fadeText 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fadeText {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        /* CARD */
+        .card {
+            background: rgba(10,10,10,0.95) !important;
+            border: 2px solid #ff0000 !important;
+            box-shadow: 0 0 50px rgba(255,0,0,0.2), inset 0 0 30px rgba(255,0,0,0.05) !important;
+            backdrop-filter: blur(5px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 4px;
+            padding: 2px;
+            background: linear-gradient(45deg, #ff0000, transparent, #ff0000, transparent);
+            background-size: 300% 300%;
+            animation: borderGlow 3s linear infinite;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        /* Matrix rain effect */
+        #matrixCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        /* ====== DESFRAGMENTAÇÃO FINAL ====== */
+        .fragment-container {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            pointer-events: none;
+            display: none;
+            background: #000;
+        }
+
+        .fragment-container.active {
+            display: block;
+        }
+
+        .fragment-piece {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,0,0,0.3), rgba(0,0,0,0.9));
+            border: 1px solid rgba(255,0,0,0.2);
+            box-shadow: 0 0 20px rgba(255,0,0,0.1);
+            animation: fragmentFly 2.5s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+            opacity: 0;
+            transform-origin: center;
+        }
+
+        @keyframes fragmentFly {
+            0% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg) translate(0, 0);
+                filter: blur(0px) brightness(1);
+            }
+            30% {
+                opacity: 1;
+                filter: blur(1px) brightness(1.5);
+            }
+            60% {
+                opacity: 0.8;
+                filter: blur(3px) brightness(0.5);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.3) rotate(720deg) translate(var(--tx), var(--ty));
+                filter: blur(8px) brightness(0);
+            }
+        }
+
+        .fragment-piece:nth-child(odd) {
+            animation-duration: 2.8s;
+        }
+        .fragment-piece:nth-child(even) {
+            animation-duration: 2.2s;
+        }
+
+        /* Screen shatter effect */
+        .shatter-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99998;
+            pointer-events: none;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255,0,0,0.2) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(255,0,0,0.15) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(255,0,0,0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .shatter-overlay.active {
+            opacity: 1;
+        }
+
+        /* Glitch flash final */
+        .final-flash {
+            position: fixed;
+            inset: 0;
+            z-index: 100001;
+            pointer-events: none;
+            background: #ff0000;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        .final-flash.active {
+            opacity: 0.3;
+            animation: flashPulse 0.5s ease-out forwards;
+        }
+
+        @keyframes flashPulse {
+            0% { opacity: 0.8; }
+            20% { opacity: 0.2; }
+            40% { opacity: 0.6; }
+            60% { opacity: 0.1; }
+            80% { opacity: 0.3; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ====== OVERLAY DA IA ====== -->
+    <div id="iaOverlay">
+        <div class="ia-container">
+            <div class="ia-particles" id="iaParticles"></div>
+            <span class="ia-icon">🤖</span>
+            <div class="ia-title">IA Assistente</div>
+            <div class="ia-subtitle">Sistema de Verificação Inteligente</div>
+            <div class="ia-message" id="iaMessage">
+                <span id="iaText">Olá! Sou sua assistente virtual. Estou aqui para ajudar você a acessar o sistema com segurança.</span>
+                <span class="typing-cursor"></span>
+            </div>
+            <button class="ia-button" id="iaButton" onclick="startSystem()">
+                <span class="ia-loading"></span> INICIAR SISTEMA
+            </button>
+        </div>
+    </div>
+
+    <!-- MATRIX BACKGROUND -->
+    <canvas id="matrixCanvas"></canvas>
+
+    <!-- FRAGMENT CONTAINER -->
+    <div class="fragment-container" id="fragmentContainer"></div>
+    <div class="shatter-overlay" id="shatterOverlay"></div>
+    <div class="final-flash" id="finalFlash"></div>
+
+    <!-- BLACK HAT OVERLAY -->
+    <div id="blackHatOverlay">
+        <div class="binary-bg" id="binaryBg"></div>
+        <div class="hacker-symbol">👾</div>
+        <div class="warning-text">💀 SISTEMA DESTRUÍDO 💀</div>
+        <div class="warning-text" style="font-size:1.5rem; margin-top:10px;">TODOS OS DADOS FORAM CORROMPIDOS</div>
+        
+        <div class="threat-text" id="threatText">
+            ⚠️ <span class="highlight">VOCÊ FOI RASTREADO</span> ⚠️
+        </div>
+        <div class="threat-text" style="font-size:1.2rem; margin-top:10px; border-color: #ff3333;">
+            🔴 SEU IP FOI REGISTRADO 🔴
+        </div>
+        <div class="threat-text" style="font-size:0.9rem; margin-top:10px; border-color: #ff6666; animation-delay: 0.5s;">
+            ⚡ LOCALIZAÇÃO: <span class="highlight" id="locationDisplay">NÃO DETERMINADA</span> ⚡
+        </div>
+        
+        <div class="sub-text" style="font-size:0.9rem; margin-top:20px; animation-delay:0.3s;">
+            ████████████████████████████████████
+        </div>
+        <div style="margin-top: 15px; color: #ff3333; font-size:0.8rem; animation: blink 0.5s step-end infinite; letter-spacing: 2px;">
+            ⚡ SISTEMA IRRECUPERÁVEL - PROTOCOLO DE SEGURANÇA VIOLADO ⚡
+        </div>
+        <button onclick="location.reload()" style="margin-top: 30px; background: transparent; border: 2px solid #ff0000; color: #ff0000; padding: 15px 40px; font-size: 1.2rem; cursor: pointer; transition: all 0.3s; font-family: 'Times New Roman', serif; text-transform: uppercase; letter-spacing: 4px;">
+            🔄 REINICIAR SISTEMA
+        </button>
+    </div>
+
+    <div class="static-overlay" id="staticOverlay"></div>
+    
+    <div class="header">
+        <h3 class="glitch" style="font-size: 1.5rem;">🔴 SISTEMA DE SEGURANÇA - PROTOCOLO ATIVADO 🔴</h3>
+        <div style="font-size: 0.7rem; color: #ff6666; margin-top: 5px; letter-spacing: 3px;">
+            ⚡ MONITORAMENTO EM TEMPO REAL ⚡
+        </div>
+    </div>
+
+    <div class="container d-flex align-items-center justify-content-center min-vh-100" style="position: relative; z-index: 1;">
+        <div class="card" style="max-width: 580px; width: 100%;">
+            
+            <!-- Etapa 1 -->
+            <div class="card-body p-4" id="step1">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 3rem; color: #ff0000; text-shadow: 0 0 30px #ff0000;">🔐</div>
+                </div>
+                <h4 class="text-center text-danger glitch" style="font-size: 1.8rem;">VERIFICAÇÃO DE IDENTIDADE</h4>
+                <p class="text-center text-muted" style="letter-spacing: 2px;">Protocolo de segurança nível 5 ativado</p>
+                
+                <div class="mb-3">
+                    <label class="form-label text-danger">🔑 DIGITE SEU NOME COMPLETO:</label>
+                    <input type="text" id="userName" class="form-control bg-dark text-light border-danger" placeholder="Nome completo..." style="font-family: monospace;">
+                    <small class="text-muted" style="letter-spacing: 1px;">• Identificação biométrica necessária</small>
+                </div>
+                
+                <button onclick="saveName()" class="btn btn-danger w-100" style="font-weight: bold; letter-spacing: 3px; padding: 12px;">
+                    ▶ CONFIRMAR IDENTIDADE
+                </button>
+            </div>
+
+            <!-- Etapa 2 -->
+            <div class="card-body p-4 d-none" id="step2">
+                <h5 class="text-danger glitch" id="greeting" style="font-size: 1.5rem;">Olá, [NOME]</h5>
+                <p class="text-muted" style="letter-spacing: 1px;">• Identidade confirmada • Iniciando protocolo...</p>
+                
+                <div class="alert alert-danger" style="background: rgba(139,0,0,0.3); border: 2px solid #ff0000;">
+                    <strong style="color: #ff0000;">⚠️ PERGUNTA DE SEGURANÇA:</strong><br>
+                    <span id="question" class="fade-text" style="font-size: 1.1rem;">Qual é a data de nascimento da sua mãe?</span>
+                </div>
+                
+                <input type="text" id="answer" class="form-control bg-dark text-light mb-3" placeholder="Digite sua resposta..." style="font-family: monospace;">
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <button onclick="submitAnswer()" class="btn btn-warning" style="font-weight: bold; letter-spacing: 2px;">
+                        ⚡ ENVIAR RESPOSTA
+                    </button>
+                    <div style="text-align: center;">
+                        <div style="color: #ff0000; font-size: 0.7rem; letter-spacing: 2px;">TEMPO RESTANTE</div>
+                        <h4 class="text-danger mb-0" id="timer" style="font-size: 2.5rem; font-weight: bold;">10</h4>
+                    </div>
+                </div>
+                
+                <small class="text-muted d-block mt-2 text-center" style="letter-spacing: 1px;">⏳ Sistema aguardando confirmação...</small>
+            </div>
+
+            <!-- Etapa 3 - Corrupção -->
+            <div class="card-body p-5 text-center d-none" id="step3">
+                <h2 class="text-danger glitch corrupted-text" style="font-size: 2.5rem;">💀 CORRUPÇÃO DETECTADA</h2>
+                <p class="fs-4 text-warning blink" style="font-size: 1.5rem;">⚠️ ARQUIVOS SENDO DESTRUÍDOS ⚠️</p>
+                
+                <div class="progress mb-3" style="height: 30px; background: #1a0000; border: 1px solid #ff0000;">
+                    <div id="progressBar" class="progress-bar bg-danger progress-bar-striped progress-bar-animated" style="width: 0%; font-weight: bold; font-size: 1rem; line-height: 30px;">0%</div>
+                </div>
+                
+                <div id="corruptionMessages" class="text-start small text-danger" style="height: 120px; overflow: hidden; background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid #ff0000; font-family: monospace;">
+                    <div id="msg1" class="d-none">⚠️ C:/Users/Documentos/Financeiro/2024.xlsx - CORROMPIDO</div>
+                    <div id="msg2" class="d-none">⚠️ C:/Users/Fotos/Familia/ - PASTA PERDIDA</div>
+                    <div id="msg3" class="d-none">⚠️ C:/Users/Documentos/Identidade.pdf - DANIFICADO</div>
+                    <div id="msg4" class="d-none">⚠️ C:/Users/Senhas/ - DADOS EXPOSTOS</div>
+                    <div id="msg5" class="d-none">⚠️ C:/Windows/System32/ - ACESSO NEGADO</div>
+                    <div id="msg6" class="d-none">⚠️ Registro do sistema - CORROMPIDO</div>
+                </div>
+                
+                <small class="text-muted" style="letter-spacing: 1px;">🔒 Simulação controlada • Nenhum dado real foi afetado</small>
+                <br>
+                <button onclick="location.reload()" class="btn btn-outline-danger mt-3" style="letter-spacing: 3px; padding: 10px 30px;">
+                    🔄 REINICIAR SISTEMA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="scanline"></div>
+    <div class="pixel-grid" id="pixelGrid"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ====== PARTÍCULAS DA IA ======
+        function createParticles() {
+            const container = document.getElementById('iaParticles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 4 + 's';
+                particle.style.animationDuration = (3 + Math.random() * 3) + 's';
+                particle.style.width = (2 + Math.random() * 4) + 'px';
+                particle.style.height = particle.style.width;
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // ====== MATRIX RAIN ======
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const columns = Math.floor(canvas.width / 20);
+        const drops = Array(columns).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#ff0000';
+            ctx.font = '20px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = String.fromCharCode(0x30A0 + Math.random() * 96);
+                ctx.fillText(text, i * 20, drops[i] * 20);
+                
+                if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        // ====== BINARY BACKGROUND ======
+        function generateBinary() {
+            const bg = document.getElementById('binaryBg');
+            let binary = '';
+            for (let i = 0; i < 2000; i++) {
+                binary += Math.random() > 0.5 ? '1' : '0';
+                if (i % 50 === 0) binary += '<br>';
+            }
+            bg.innerHTML = binary;
+        }
+        generateBinary();
+
+        // ====== AUDIO ======
+        let audioCtx = null;
+        let isCorrupted = false;
+        let userName = "";
+        let timerInterval;
+
+        function playStatic(intensity = 0.08) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                const bufferSize = 2 * audioCtx.sampleRate;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2) - 1;
+                }
+                
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = intensity;
+                
+                source.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                source.start();
+                source.stop(audioCtx.currentTime + 0.3);
+            } catch (e) {}
+        }
+
+        function playAlarm() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+                
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.2);
+            } catch (e) {}
+        }
+
+        // ====== GARGALHADA SINISTRA ======
+        function playLaugh() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                const laughDuration = 2.5;
+                const startTime = audioCtx.currentTime;
+                
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                
+                osc1.type = 'sawtooth';
+                osc1.frequency.setValueAtTime(180, startTime);
+                osc1.frequency.exponentialRampToValueAtTime(120, startTime + 0.5);
+                osc1.frequency.exponentialRampToValueAtTime(200, startTime + 1.0);
+                osc1.frequency.exponentialRampToValueAtTime(90, startTime + 1.8);
+                osc1.frequency.exponentialRampToValueAtTime(150, startTime + 2.2);
+                
+                gain1.gain.setValueAtTime(0.15, startTime);
+                gain1.gain.exponentialRampToValueAtTime(0.01, startTime + laughDuration);
+                
+                osc1.start(startTime);
+                osc1.stop(startTime + laughDuration);
+                
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                
+                osc2.type = 'square';
+                osc2.frequency.setValueAtTime(400, startTime);
+                osc2.frequency.exponentialRampToValueAtTime(250, startTime + 0.3);
+                osc2.frequency.exponentialRampToValueAtTime(450, startTime + 0.8);
+                osc2.frequency.exponentialRampToValueAtTime(200, startTime + 1.5);
+                osc2.frequency.exponentialRampToValueAtTime(350, startTime + 2.0);
+                
+                gain2.gain.setValueAtTime(0.08, startTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, startTime + laughDuration);
+                
+                osc2.start(startTime);
+                osc2.stop(startTime + laughDuration);
+                
+                const osc3 = audioCtx.createOscillator();
+                const gain3 = audioCtx.createGain();
+                osc3.connect(gain3);
+                gain3.connect(audioCtx.destination);
+                
+                osc3.type = 'sine';
+                osc3.frequency.setValueAtTime(60, startTime);
+                osc3.frequency.exponentialRampToValueAtTime(30, startTime + 1.0);
+                osc3.frequency.exponentialRampToValueAtTime(80, startTime + 2.0);
+                
+                gain3.gain.setValueAtTime(0.12, startTime);
+                gain3.gain.exponentialRampToValueAtTime(0.01, startTime + laughDuration);
+                
+                osc3.start(startTime);
+                osc3.stop(startTime + laughDuration);
+                
+                setTimeout(() => playStatic(0.15), 300);
+                setTimeout(() => playStatic(0.1), 1000);
+                setTimeout(() => playStatic(0.2), 1800);
+                
+            } catch (e) {
+                playStatic(0.3);
+            }
+        }
+
+        // ====== AMEAÇA FINAL ======
+        function showThreat() {
+            const threatText = document.getElementById('threatText');
+            const locationDisplay = document.getElementById('locationDisplay');
+            
+            const cities = ['São Paulo, BR', 'Rio de Janeiro, BR', 'Brasília, BR', 'Belo Horizonte, BR', 
+                          'Porto Alegre, BR', 'Curitiba, BR', 'Salvador, BR', 'Fortaleza, BR'];
+            
+            locationDisplay.textContent = cities[Math.floor(Math.random() * cities.length)];
+            
+            setTimeout(() => {
+                threatText.innerHTML = '⚠️ <span class="highlight">VOCÊ FOI RASTREADO</span> ⚠️';
+                playAlarm();
+            }, 500);
+            
+            setTimeout(() => {
+                threatText.innerHTML = '☠️ <span class="highlight">SUA LOCALIZAÇÃO É CONHECIDA</span> ☠️';
+                playAlarm();
+            }, 2000);
+            
+            setTimeout(() => {
+                threatText.innerHTML = '🔴 <span class="highlight">VOCÊ ESTÁ SENDO MONITORADO</span> 🔴';
+                playAlarm();
+            }, 3500);
+            
+            setTimeout(() => {
+                threatText.innerHTML = '💀 <span class="highlight">NÃO HÁ ESCAPE</span> 💀';
+                playAlarm();
+                playLaugh();
+            }, 5000);
+            
+            setTimeout(() => {
+                threatText.innerHTML = '⚠️ <span class="highlight">SUA IDENTIDADE FOI COMPROMETIDA</span> ⚠️';
+                playAlarm();
+            }, 7000);
+            
+            setTimeout(() => {
+                threatText.innerHTML = '☠️ <span class="highlight">VOCÊ PERTENCE AO SISTEMA</span> ☠️';
+                playLaugh();
+            }, 9000);
+            
+            const laughInterval = setInterval(() => {
+                if (!document.getElementById('blackHatOverlay').classList.contains('active')) {
+                    clearInterval(laughInterval);
+                    return;
+                }
+                playLaugh();
+            }, 4000);
+        }
+
+        // ====== FUNÇÃO DE DESFRAGMENTAÇÃO ======
+        function triggerDesfragmentacao() {
+            const container = document.getElementById('fragmentContainer');
+            const overlay = document.getElementById('shatterOverlay');
+            const flash = document.getElementById('finalFlash');
+            
+            container.classList.add('active');
+            overlay.classList.add('active');
+            
+            const numPieces = 55;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            for (let i = 0; i < numPieces; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'fragment-piece';
+                
+                const size = 30 + Math.random() * 130;
+                const x = Math.random() * (width - size);
+                const y = Math.random() * (height - size);
+                
+                const tx = (Math.random() - 0.5) * 1000;
+                const ty = (Math.random() - 0.5) * 1000;
+                
+                piece.style.width = size + 'px';
+                piece.style.height = size + 'px';
+                piece.style.left = x + 'px';
+                piece.style.top = y + 'px';
+                piece.style.setProperty('--tx', tx + 'px');
+                piece.style.setProperty('--ty', ty + 'px');
+                piece.style.animationDelay = (Math.random() * 0.6) + 's';
+                piece.style.borderRadius = (Math.random() * 50) + '%';
+                piece.style.background = `radial-gradient(circle at ${30 + Math.random() * 40}% ${30 + Math.random() * 40}%, 
+                    rgba(255,${Math.floor(Math.random() * 50)},0,${0.2 + Math.random() * 0.4}), 
+                    rgba(0,0,0,0.9))`;
+                
+                container.appendChild(piece);
+            }
+            
+            setTimeout(() => {
+                flash.classList.add('active');
+                playStatic(0.5);
+                playAlarm();
+                playLaugh();
+            }, 200);
+            
+            setTimeout(() => {
+                flash.classList.remove('active');
+            }, 700);
+            
+            setTimeout(() => {
+                document.getElementById('blackHatOverlay').classList.add('active');
+                playStatic(0.3);
+                playAlarm();
+                setTimeout(() => playAlarm(), 400);
+                setTimeout(() => playStatic(0.25), 700);
+                setTimeout(() => playLaugh(), 1000);
+                setTimeout(() => showThreat(), 1500);
+            }, 2000);
+        }
+
+        // ====== FUNÇÃO PARA INICIAR O SISTEMA (REMOVE A IA) ======
+        function startSystem() {
+            const iaOverlay = document.getElementById('iaOverlay');
+            iaOverlay.classList.add('fade-out');
+            
+            // Tocar som de transição
+            playStatic(0.1);
+            
+            setTimeout(() => {
+                iaOverlay.style.display = 'none';
+            }, 1500);
+        }
+
+        // ====== FUNÇÕES PRINCIPAIS ======
+        function saveName() {
+            userName = document.getElementById("userName").value.trim() || "Usuário";
+            document.getElementById("step1").classList.add("d-none");
+            document.getElementById("step2").classList.remove("d-none");
+            document.getElementById("greeting").innerHTML = `Olá, <strong>${userName}</strong>`;
+            playStatic(0.12);
+            startTimer();
+        }
+
+        function startTimer() {
+            let time = 10;
+            const timerEl = document.getElementById("timer");
+            
+            timerInterval = setInterval(() => {
+                time--;
+                timerEl.textContent = time;
+                if (time <= 3) {
+                    timerEl.style.color = "#ff0000";
+                    timerEl.style.textShadow = "0 0 20px #ff0000";
+                    playStatic(0.15);
+                    if (time === 3) playAlarm();
+                }
+                if (time <= 0) {
+                    clearInterval(timerInterval);
+                    triggerCorruption();
+                }
+            }, 1000);
+        }
+
+        function submitAnswer() {
+            clearInterval(timerInterval);
+            const answer = document.getElementById("answer").value.trim();
+            if (answer) {
+                playStatic(0.15);
+                playAlarm();
+            }
+            triggerCorruption();
+        }
+
+        function triggerCorruption() {
+            if (isCorrupted) return;
+            isCorrupted = true;
+            
+            document.getElementById("step2").classList.add("d-none");
+            document.getElementById("step3").classList.remove("d-none");
+            
+            document.body.style.filter = "contrast(1.3) brightness(0.7)";
+            document.getElementById("pixelGrid").style.opacity = "0.8";
+            document.getElementById("staticOverlay").style.opacity = "0.6";
+            document.getElementById("staticOverlay").classList.add("fragment");
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    playStatic(0.2);
+                    if (i % 2 === 0) playAlarm();
+                    if (i === 2) playLaugh();
+                }, i * 300);
+            }
+            
+            let progress = 0;
+            const bar = document.getElementById("progressBar");
+            let messageIndex = 0;
+            const messages = ['msg1', 'msg2', 'msg3', 'msg4', 'msg5', 'msg6'];
+            
+            const int = setInterval(() => {
+                progress += Math.random() * 12 + 8;
+                if (progress > 100) {
+                    progress = 100;
+                    clearInterval(int);
+                    messages.forEach(id => document.getElementById(id).classList.remove('d-none'));
+                    
+                    document.body.style.filter = "contrast(1.8) brightness(0.4) blur(2px)";
+                    document.getElementById("pixelGrid").classList.add("fragment");
+                    document.getElementById("pixelGrid").style.opacity = "1";
+                    document.getElementById("staticOverlay").style.opacity = "0.9";
+                    
+                    setTimeout(() => {
+                        triggerDesfragmentacao();
+                    }, 800);
+                    
+                    playStatic(0.3);
+                    setTimeout(() => playStatic(0.25), 400);
+                    setTimeout(() => playLaugh(), 600);
+                    return;
+                }
+                
+                bar.style.width = progress + "%";
+                bar.textContent = Math.floor(progress) + "%";
+                
+                if (progress > 15 && messageIndex === 0) {
+                    document.getElementById('msg1').classList.remove('d-none');
+                    playStatic(0.18);
+                    messageIndex++;
+                }
+                if (progress > 30 && messageIndex === 1) {
+                    document.getElementById('msg2').classList.remove('d-none');
+                    playStatic(0.18);
+                    messageIndex++;
+                }
+                if (progress > 45 && messageIndex === 2) {
+                    document.getElementById('msg3').classList.remove('d-none');
+                    playStatic(0.18);
+                    if (messageIndex === 2) playLaugh();
+                    messageIndex++;
+                }
+                if (progress > 60 && messageIndex === 3) {
+                    document.getElementById('msg4').classList.remove('d-none');
+                    playStatic(0.18);
+                    messageIndex++;
+                }
+                if (progress > 75 && messageIndex === 4) {
+                    document.getElementById('msg5').classList.remove('d-none');
+                    playStatic(0.2);
+                    messageIndex++;
+                }
+                if (progress > 90 && messageIndex === 5) {
+                    document.getElementById('msg6').classList.remove('d-none');
+                    playStatic(0.25);
+                    playAlarm();
+                    playLaugh();
+                    messageIndex++;
+                }
+            }, 120);
+            
+            const staticInterval = setInterval(() => {
+                if (progress >= 100) {
+                    clearInterval(staticInterval);
+                } else {
+                    playStatic(0.12);
+                }
+            }, 600);
+        }
+
+        // ====== EVENTOS ======
+        document.addEventListener("keydown", e => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                location.reload();
+            }
+            if (e.key === "F12") {
+                e.preventDefault();
+                playStatic(0.2);
+                playAlarm();
+                playLaugh();
+            }
+        });
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        console.log('📁 Para acessar OFFLINE:');
+        console.log('1. Salve este arquivo como .html');
+        console.log('2. Abra diretamente no navegador');
+        console.log('');
+        console.log('🔗 LINK OFFLINE: file://' + window.location.pathname);
+        console.log('');
+        console.log('🤖 IA Assistente: "Olá! Vou ajudar você a acessar o sistema..."');
+        console.log('💀 SISTEMA DESTRUÍDO - DESFRAGMENTAÇÃO COMPLETA 💀');
+        console.log('🔴 VOCÊ FOI RASTREADO - SUA LOCALIZAÇÃO É CONHECIDA 🔴');
+        console.log('👾 GARGALHADA SINISTRA ATIVADA - SISTEMA IRRECUPERÁVEL 👾');
+    </script>
+</body>
+</html>
