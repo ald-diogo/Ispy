@@ -22,6 +22,20 @@
             transition: filter 0.8s;
         }
 
+        body.corrupted {
+            filter: contrast(1.6) brightness(0.55) hue-rotate(10deg) saturate(1.8);
+            animation: heavyGlitch 0.12s linear infinite;
+        }
+
+        @keyframes heavyGlitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-8px, 3px); }
+            40% { transform: translate(6px, -5px); }
+            60% { transform: translate(-4px, 6px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); }
+        }
+
         /* ====== OVERLAY DA IA ====== */
         #iaOverlay {
             position: fixed;
@@ -194,7 +208,7 @@
         #blackHatOverlay {
             position: fixed;
             inset: 0;
-            background: radial-gradient(ellipse at center, rgba(0,0,0,0.97) 0%, rgba(139,0,0,0.6) 100%);
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.97) 0%, rgba(139,0,0,0.8) 100%);
             z-index: 100000;
             display: none;
             justify-content: center;
@@ -266,7 +280,7 @@
             position: absolute;
             inset: 0;
             overflow: hidden;
-            opacity: 0.2;
+            opacity: 0.3;
             font-family: monospace;
             font-size: 14px;
             color: #ff0000;
@@ -453,7 +467,7 @@
             pointer-events: none;
         }
 
-        /* ====== DESFRAGMENTAÇÃO FINAL ====== */
+        /* ====== DESFRAGMENTAÇÃO VERDE BINÁRIA ====== */
         .fragment-container {
             position: fixed;
             inset: 0;
@@ -470,11 +484,18 @@
         .fragment-piece {
             position: absolute;
             background: radial-gradient(circle, rgba(255,0,0,0.3), rgba(0,0,0,0.9));
-            border: 1px solid rgba(255,0,0,0.2);
-            box-shadow: 0 0 20px rgba(255,0,0,0.1);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
             animation: fragmentFly 2.5s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
             opacity: 0;
             transform-origin: center;
+            color: #00ff41;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            text-shadow: 0 0 10px #00ff41;
         }
 
         @keyframes fragmentFly {
@@ -485,7 +506,7 @@
             }
             30% {
                 opacity: 1;
-                filter: blur(1px) brightness(1.5);
+                filter: blur(1px) brightness(1.8);
             }
             60% {
                 opacity: 0.8;
@@ -512,9 +533,9 @@
             z-index: 99998;
             pointer-events: none;
             background: 
-                radial-gradient(circle at 20% 30%, rgba(255,0,0,0.2) 0%, transparent 30%),
-                radial-gradient(circle at 80% 70%, rgba(255,0,0,0.15) 0%, transparent 25%),
-                radial-gradient(circle at 50% 50%, rgba(255,0,0,0.1) 0%, transparent 50%);
+                radial-gradient(circle at 20% 30%, rgba(0, 255, 65, 0.3) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(0, 255, 65, 0.25) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.2) 0%, transparent 50%);
             opacity: 0;
             transition: opacity 1s;
         }
@@ -804,74 +825,61 @@
             } catch (e) {}
         }
 
-        // ====== GARGALHADA SINISTRA ======
-        function playLaugh() {
+        // ====== GARGALHADA SINISTRA MELHORADA ======
+        function playSinisterLaugh(intensity = 1) {
             try {
                 if (!audioCtx) {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 }
                 
-                const laughDuration = 2.5;
-                const startTime = audioCtx.currentTime;
+                const now = audioCtx.currentTime;
+                const duration = 3.2 + Math.random() * 1.5;
+
+                // Camadas de riso distorcido
+                for (let i = 0; i < 3; i++) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    const filter = audioCtx.createBiquadFilter();
+
+                    osc.type = i === 0 ? 'sawtooth' : i === 1 ? 'square' : 'sine';
+                    osc.frequency.setValueAtTime(120 + i*60, now);
+                    osc.frequency.exponentialRampToValueAtTime(60 + Math.random()*80, now + duration);
+
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(800, now);
+                    filter.frequency.exponentialRampToValueAtTime(200, now + duration);
+
+                    gain.gain.setValueAtTime(0.25 * intensity, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                    osc.connect(filter).connect(gain).connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + duration);
+                }
+
+                // Distortion + reverb simulados
+                setTimeout(() => playStatic(0.35 * intensity), 400);
+                setTimeout(() => playStatic(0.25 * intensity), 1400);
                 
-                const osc1 = audioCtx.createOscillator();
-                const gain1 = audioCtx.createGain();
-                osc1.connect(gain1);
-                gain1.connect(audioCtx.destination);
-                
-                osc1.type = 'sawtooth';
-                osc1.frequency.setValueAtTime(180, startTime);
-                osc1.frequency.exponentialRampToValueAtTime(120, startTime + 0.5);
-                osc1.frequency.exponentialRampToValueAtTime(200, startTime + 1.0);
-                osc1.frequency.exponentialRampToValueAtTime(90, startTime + 1.8);
-                osc1.frequency.exponentialRampToValueAtTime(150, startTime + 2.2);
-                
-                gain1.gain.setValueAtTime(0.15, startTime);
-                gain1.gain.exponentialRampToValueAtTime(0.01, startTime + laughDuration);
-                
-                osc1.start(startTime);
-                osc1.stop(startTime + laughDuration);
-                
-                const osc2 = audioCtx.createOscillator();
-                const gain2 = audioCtx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(audioCtx.destination);
-                
-                osc2.type = 'square';
-                osc2.frequency.setValueAtTime(400, startTime);
-                osc2.frequency.exponentialRampToValueAtTime(250, startTime + 0.3);
-                osc2.frequency.exponentialRampToValueAtTime(450, startTime + 0.8);
-                osc2.frequency.exponentialRampToValueAtTime(200, startTime + 1.5);
-                osc2.frequency.exponentialRampToValueAtTime(350, startTime + 2.0);
-                
-                gain2.gain.setValueAtTime(0.08, startTime);
-                gain2.gain.exponentialRampToValueAtTime(0.01, startTime + laughDuration);
-                
-                osc2.start(startTime);
-                osc2.stop(startTime + laughDuration);
-                
-                const osc3 = audioCtx.createOscillator();
-                const gain3 = audioCtx.createGain();
-                osc3.connect(gain3);
-                gain3.connect(audioCtx.destination);
-                
-                osc3.type = 'sine';
-                osc3.frequency.setValueAtTime(60, startTime);
-                osc3.frequency.exponentialRampToValueAtTime(30, startTime + 1.0);
-                osc3.frequency.exponentialRampToValueAtTime(80, startTime + 2.0);
-                
-                gain3.gain.setValueAtTime(0.12, startTime);
-                gain3.gain.exponentialRampToValueAtTime(0.01, startTime + laughDuration);
-                
-                osc3.start(startTime);
-                osc3.stop(startTime + laughDuration);
-                
-                setTimeout(() => playStatic(0.15), 300);
-                setTimeout(() => playStatic(0.1), 1000);
-                setTimeout(() => playStatic(0.2), 1800);
+                // Voz sintetizada sobreposta
+                setTimeout(() => {
+                    speakThreat("Hahahaha... eu vejo você...", 0.7);
+                }, 500);
                 
             } catch (e) {
                 playStatic(0.3);
+            }
+        }
+
+        // ====== VOZ SINTETIZADA ======
+        function speakThreat(text, rate = 0.85) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pt-BR';
+                utterance.rate = rate;
+                utterance.pitch = 0.6;
+                utterance.volume = 0.9;
+                speechSynthesis.speak(utterance);
             }
         }
 
@@ -888,32 +896,37 @@
             setTimeout(() => {
                 threatText.innerHTML = '⚠️ <span class="highlight">VOCÊ FOI RASTREADO</span> ⚠️';
                 playAlarm();
+                speakThreat("Você foi rastreado.", 0.8);
             }, 500);
             
             setTimeout(() => {
                 threatText.innerHTML = '☠️ <span class="highlight">SUA LOCALIZAÇÃO É CONHECIDA</span> ☠️';
                 playAlarm();
+                speakThreat("Sua localização é conhecida.", 0.7);
             }, 2000);
             
             setTimeout(() => {
                 threatText.innerHTML = '🔴 <span class="highlight">VOCÊ ESTÁ SENDO MONITORADO</span> 🔴';
                 playAlarm();
+                speakThreat("Você está sendo monitorado.", 0.65);
             }, 3500);
             
             setTimeout(() => {
                 threatText.innerHTML = '💀 <span class="highlight">NÃO HÁ ESCAPE</span> 💀';
                 playAlarm();
-                playLaugh();
+                playSinisterLaugh(1.5);
             }, 5000);
             
             setTimeout(() => {
                 threatText.innerHTML = '⚠️ <span class="highlight">SUA IDENTIDADE FOI COMPROMETIDA</span> ⚠️';
                 playAlarm();
+                speakThreat("Sua identidade foi comprometida.", 0.7);
             }, 7000);
             
             setTimeout(() => {
                 threatText.innerHTML = '☠️ <span class="highlight">VOCÊ PERTENCE AO SISTEMA</span> ☠️';
-                playLaugh();
+                playSinisterLaugh(1.8);
+                speakThreat("Você pertence ao sistema.", 0.6);
             }, 9000);
             
             const laughInterval = setInterval(() => {
@@ -921,20 +934,30 @@
                     clearInterval(laughInterval);
                     return;
                 }
-                playLaugh();
-            }, 4000);
+                playSinisterLaugh(1.2);
+                if (Math.random() > 0.6) {
+                    speakThreat("Hahaha... não adianta fechar esta janela...", 0.6);
+                }
+            }, 5000);
         }
 
-        // ====== FUNÇÃO DE DESFRAGMENTAÇÃO ======
-        function triggerDesfragmentacao() {
+        // ====== FUNÇÃO DE DESFRAGMENTAÇÃO VERDE BINÁRIA ======
+        function triggerGreenBinaryDefrag() {
             const container = document.getElementById('fragmentContainer');
             const overlay = document.getElementById('shatterOverlay');
             const flash = document.getElementById('finalFlash');
             
+            container.innerHTML = '';
             container.classList.add('active');
             overlay.classList.add('active');
             
-            const numPieces = 55;
+            // Efeito matrix verde adicional
+            document.getElementById('matrixCanvas').style.opacity = '0.15';
+            
+            // Chuva de binário verde
+            startGreenBinaryRain();
+            
+            const numPieces = 120;
             const width = window.innerWidth;
             const height = window.innerHeight;
             
@@ -942,12 +965,12 @@
                 const piece = document.createElement('div');
                 piece.className = 'fragment-piece';
                 
-                const size = 30 + Math.random() * 130;
+                const size = 15 + Math.random() * 90;
                 const x = Math.random() * (width - size);
                 const y = Math.random() * (height - size);
                 
-                const tx = (Math.random() - 0.5) * 1000;
-                const ty = (Math.random() - 0.5) * 1000;
+                const tx = (Math.random() - 0.5) * 1800;
+                const ty = (Math.random() - 0.5) * 1800 - 300;
                 
                 piece.style.width = size + 'px';
                 piece.style.height = size + 'px';
@@ -955,11 +978,15 @@
                 piece.style.top = y + 'px';
                 piece.style.setProperty('--tx', tx + 'px');
                 piece.style.setProperty('--ty', ty + 'px');
-                piece.style.animationDelay = (Math.random() * 0.6) + 's';
-                piece.style.borderRadius = (Math.random() * 50) + '%';
-                piece.style.background = `radial-gradient(circle at ${30 + Math.random() * 40}% ${30 + Math.random() * 40}%, 
-                    rgba(255,${Math.floor(Math.random() * 50)},0,${0.2 + Math.random() * 0.4}), 
-                    rgba(0,0,0,0.9))`;
+                piece.style.animationDuration = (1.8 + Math.random() * 2.2) + 's';
+                piece.style.background = `linear-gradient(45deg, #00ff41, #008f1e, #00ff41)`;
+                piece.style.boxShadow = '0 0 25px #00ff41';
+                piece.style.opacity = Math.random() * 0.7 + 0.3;
+                piece.style.border = '1px solid rgba(0, 255, 65, 0.3)';
+                
+                // Binário dentro dos fragmentos
+                const binaryText = Math.random() > 0.5 ? '10110' : '01101';
+                piece.innerHTML = `<span style="font-size:${10 + Math.random() * 6}px; color:#000; font-family:monospace; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.8;">${binaryText}</span>`;
                 
                 container.appendChild(piece);
             }
@@ -968,7 +995,8 @@
                 flash.classList.add('active');
                 playStatic(0.5);
                 playAlarm();
-                playLaugh();
+                playSinisterLaugh(1.8);
+                speakThreat("Desfragmentação binária iniciada...", 0.5);
             }, 200);
             
             setTimeout(() => {
@@ -981,9 +1009,64 @@
                 playAlarm();
                 setTimeout(() => playAlarm(), 400);
                 setTimeout(() => playStatic(0.25), 700);
-                setTimeout(() => playLaugh(), 1000);
+                setTimeout(() => playSinisterLaugh(2.0), 1000);
                 setTimeout(() => showThreat(), 1500);
             }, 2000);
+        }
+
+        // ====== CHUVA DE BINÁRIO VERDE ======
+        function startGreenBinaryRain() {
+            const rainCanvas = document.createElement('canvas');
+            rainCanvas.id = 'greenRainCanvas';
+            rainCanvas.style.position = 'fixed';
+            rainCanvas.style.inset = '0';
+            rainCanvas.style.zIndex = '99999';
+            rainCanvas.style.pointerEvents = 'none';
+            rainCanvas.style.opacity = '0.3';
+            document.body.appendChild(rainCanvas);
+            
+            const ctx = rainCanvas.getContext('2d');
+            rainCanvas.width = window.innerWidth;
+            rainCanvas.height = window.innerHeight;
+            
+            const columns = Math.floor(rainCanvas.width / 15);
+            const drops = Array(columns).fill(1);
+            
+            function drawGreenRain() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, rainCanvas.width, rainCanvas.height);
+                
+                ctx.fillStyle = '#00ff41';
+                ctx.font = '14px monospace';
+                
+                for (let i = 0; i < drops.length; i++) {
+                    const text = Math.random() > 0.5 ? '1' : '0';
+                    ctx.fillText(text, i * 15, drops[i] * 15);
+                    
+                    if (drops[i] * 15 > rainCanvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+                
+                if (document.getElementById('blackHatOverlay').classList.contains('active')) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                    ctx.fillRect(0, 0, rainCanvas.width, rainCanvas.height);
+                    return;
+                }
+                
+                requestAnimationFrame(drawGreenRain);
+            }
+            
+            drawGreenRain();
+            
+            // Remover após 10 segundos se não tiver ativado
+            setTimeout(() => {
+                const canvas = document.getElementById('greenRainCanvas');
+                if (canvas && !document.getElementById('blackHatOverlay').classList.contains('active')) {
+                    canvas.remove();
+                }
+            }, 10000);
         }
 
         // ====== FUNÇÃO PARA INICIAR O SISTEMA (REMOVE A IA) ======
@@ -993,6 +1076,7 @@
             
             // Tocar som de transição
             playStatic(0.1);
+            speakThreat("Ótimo... agora eu te conheço...", 0.7);
             
             setTimeout(() => {
                 iaOverlay.style.display = 'none';
@@ -1035,6 +1119,7 @@
             if (answer) {
                 playStatic(0.15);
                 playAlarm();
+                speakThreat("Mentir não vai adiantar...", 0.6);
             }
             triggerCorruption();
         }
@@ -1046,16 +1131,23 @@
             document.getElementById("step2").classList.add("d-none");
             document.getElementById("step3").classList.remove("d-none");
             
-            document.body.style.filter = "contrast(1.3) brightness(0.7)";
+            document.body.classList.add('corrupted');
             document.getElementById("pixelGrid").style.opacity = "0.8";
             document.getElementById("staticOverlay").style.opacity = "0.6";
             document.getElementById("staticOverlay").classList.add("fragment");
+            
+            // Mensagens personalizadas com nome
+            document.getElementById('msg1').innerHTML = `⚠️ C:/Users/${userName}/Documentos/Financeiro/2024.xlsx - CORROMPIDO`;
+            document.getElementById('msg2').innerHTML = `⚠️ C:/Users/${userName}/Fotos/Familia/ - PASTA PERDIDA`;
+            document.getElementById('msg3').innerHTML = `⚠️ C:/Users/${userName}/Documentos/Identidade.pdf - DANIFICADO`;
+            document.getElementById('msg4').innerHTML = `⚠️ C:/Users/${userName}/Senhas/ - DADOS EXPOSTOS`;
             
             for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
                     playStatic(0.2);
                     if (i % 2 === 0) playAlarm();
-                    if (i === 2) playLaugh();
+                    if (i === 2) playSinisterLaugh(1.3);
+                    if (i === 3) speakThreat("Seus arquivos já são meus...", 0.6);
                 }, i * 300);
             }
             
@@ -1071,18 +1163,19 @@
                     clearInterval(int);
                     messages.forEach(id => document.getElementById(id).classList.remove('d-none'));
                     
-                    document.body.style.filter = "contrast(1.8) brightness(0.4) blur(2px)";
+                    document.body.classList.add('corrupted');
                     document.getElementById("pixelGrid").classList.add("fragment");
                     document.getElementById("pixelGrid").style.opacity = "1";
                     document.getElementById("staticOverlay").style.opacity = "0.9";
                     
                     setTimeout(() => {
-                        triggerDesfragmentacao();
+                        triggerGreenBinaryDefrag();
                     }, 800);
                     
                     playStatic(0.3);
                     setTimeout(() => playStatic(0.25), 400);
-                    setTimeout(() => playLaugh(), 600);
+                    setTimeout(() => playSinisterLaugh(1.8), 600);
+                    setTimeout(() => speakThreat("Sistema irrecuperável...", 0.5), 700);
                     return;
                 }
                 
@@ -1102,12 +1195,13 @@
                 if (progress > 45 && messageIndex === 2) {
                     document.getElementById('msg3').classList.remove('d-none');
                     playStatic(0.18);
-                    if (messageIndex === 2) playLaugh();
+                    if (messageIndex === 2) playSinisterLaugh(1.3);
                     messageIndex++;
                 }
                 if (progress > 60 && messageIndex === 3) {
                     document.getElementById('msg4').classList.remove('d-none');
                     playStatic(0.18);
+                    speakThreat("Seus dados estão expostos...", 0.6);
                     messageIndex++;
                 }
                 if (progress > 75 && messageIndex === 4) {
@@ -1119,7 +1213,7 @@
                     document.getElementById('msg6').classList.remove('d-none');
                     playStatic(0.25);
                     playAlarm();
-                    playLaugh();
+                    playSinisterLaugh(1.5);
                     messageIndex++;
                 }
             }, 120);
@@ -1143,7 +1237,8 @@
                 e.preventDefault();
                 playStatic(0.2);
                 playAlarm();
-                playLaugh();
+                playSinisterLaugh(1.5);
+                speakThreat("Não adianta tentar...", 0.6);
             }
         });
 
@@ -1161,9 +1256,9 @@
         console.log('🔗 LINK OFFLINE: file://' + window.location.pathname);
         console.log('');
         console.log('🤖 IA Assistente: "Olá! Vou ajudar você a acessar o sistema..."');
-        console.log('💀 SISTEMA DESTRUÍDO - DESFRAGMENTAÇÃO COMPLETA 💀');
+        console.log('💀 SISTEMA DESTRUÍDO - DESFRAGMENTAÇÃO BINÁRIA VERDE 💀');
         console.log('🔴 VOCÊ FOI RASTREADO - SUA LOCALIZAÇÃO É CONHECIDA 🔴');
-        console.log('👾 GARGALHADA SINISTRA ATIVADA - SISTEMA IRRECUPERÁVEL 👾');
+        console.log('👾 GARGALHADA DEMONÍACA ATIVADA - SISTEMA IRRECUPERÁVEL 👾');
     </script>
 </body>
 </html>
