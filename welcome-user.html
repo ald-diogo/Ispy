@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 IA Assistente - Sistema de Segurança</title>
+    <title>IA Assistente - Sistema de Segurança</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         * {
@@ -568,6 +568,139 @@
             80% { opacity: 0.3; }
             100% { opacity: 0; }
         }
+
+        /* ====== FAKE WEBCAM ====== */
+        #webcamContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            z-index: 99999;
+            border: 3px solid #ff0000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255,0,0,0.5);
+            display: none;
+            background: #000;
+        }
+
+        #webcamContainer.active {
+            display: block;
+        }
+
+        #webcamContainer video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            filter: contrast(1.5) brightness(0.7) saturate(0.5);
+        }
+
+        #webcamContainer .webcam-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,0,0,0.2);
+            pointer-events: none;
+        }
+
+        #webcamContainer .webcam-text {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #ff0000;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            animation: blink 0.5s step-end infinite;
+            background: rgba(0,0,0,0.7);
+            padding: 3px;
+            font-family: monospace;
+        }
+
+        /* ====== POP-UP FALSOS ====== */
+        .fake-popup {
+            position: fixed;
+            background: rgba(0,0,0,0.95);
+            border: 2px solid #ff0000;
+            border-radius: 8px;
+            padding: 15px 20px;
+            z-index: 99999;
+            color: #ff0000;
+            font-family: monospace;
+            font-size: 12px;
+            box-shadow: 0 0 30px rgba(255,0,0,0.3);
+            animation: popUp 0.3s ease-out, glitch 0.2s linear infinite;
+            max-width: 300px;
+        }
+
+        @keyframes popUp {
+            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .fake-popup .popup-title {
+            font-weight: bold;
+            color: #ff3333;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        /* ====== RACHADURAS VERMELHAS ====== */
+        #cracksContainer {
+            position: fixed;
+            inset: 0;
+            z-index: 99997;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1.5s;
+        }
+
+        #cracksContainer.active {
+            opacity: 1;
+        }
+
+        .crack {
+            position: absolute;
+            background: rgba(255,0,0,0.4);
+            box-shadow: 0 0 10px rgba(255,0,0,0.3);
+            transform-origin: center;
+        }
+
+        /* ====== TEXTO DIGITANDO FINAL ====== */
+        #typingText {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100002;
+            color: #ff0000;
+            font-family: monospace;
+            font-size: 24px;
+            text-align: center;
+            text-shadow: 0 0 30px #ff0000;
+            display: none;
+            background: rgba(0,0,0,0.8);
+            padding: 20px 40px;
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        #typingText.active {
+            display: block;
+        }
+
+        #typingText .cursor {
+            animation: blink 0.5s step-end infinite;
+        }
+
+        /* ====== ÁUDIO DE FUNDO ====== */
+        #backgroundAudio {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -595,6 +728,19 @@
     <div class="fragment-container" id="fragmentContainer"></div>
     <div class="shatter-overlay" id="shatterOverlay"></div>
     <div class="final-flash" id="finalFlash"></div>
+
+    <!-- RACHADURAS -->
+    <div id="cracksContainer"></div>
+
+    <!-- TEXTO DIGITANDO -->
+    <div id="typingText"></div>
+
+    <!-- FAKE WEBCAM -->
+    <div id="webcamContainer">
+        <video id="webcamVideo" autoplay playsinline></video>
+        <div class="webcam-overlay"></div>
+        <div class="webcam-text">🔴 V OCÊ ESTÁ SENDO OBSERVADO 🔴</div>
+    </div>
 
     <!-- BLACK HAT OVERLAY -->
     <div id="blackHatOverlay">
@@ -770,11 +916,199 @@
         }
         generateBinary();
 
+        // ====== FAKE WEBCAM ======
+        async function activateWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user', width: 200, height: 150 } 
+                });
+                const video = document.getElementById('webcamVideo');
+                video.srcObject = stream;
+                document.getElementById('webcamContainer').classList.add('active');
+                return true;
+            } catch (e) {
+                console.log('Webcam não disponível');
+                return false;
+            }
+        }
+
+        // ====== POP-UPS FALSOS ======
+        function createFakePopup(text, title = '⚠️ ALERTA DE SEGURANÇA', x = null, y = null) {
+            const popup = document.createElement('div');
+            popup.className = 'fake-popup';
+            popup.innerHTML = `
+                <div class="popup-title">${title}</div>
+                <div style="color: #ff6666;">${text}</div>
+                <div style="margin-top: 5px; font-size: 10px; color: #ff3333;">${new Date().toLocaleTimeString()}</div>
+            `;
+            popup.style.left = (x || Math.random() * (window.innerWidth - 320)) + 'px';
+            popup.style.top = (y || Math.random() * (window.innerHeight - 150)) + 'px';
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                popup.style.opacity = '0';
+                popup.style.transition = 'opacity 1s';
+                setTimeout(() => popup.remove(), 1000);
+            }, 4000);
+        }
+
+        // ====== RACHADURAS VERMELHAS ======
+        function createCracks() {
+            const container = document.getElementById('cracksContainer');
+            container.classList.add('active');
+            
+            for (let i = 0; i < 20; i++) {
+                const crack = document.createElement('div');
+                crack.className = 'crack';
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+                const width = 20 + Math.random() * 100;
+                const height = 2 + Math.random() * 4;
+                const angle = Math.random() * 360;
+                
+                crack.style.left = x + 'px';
+                crack.style.top = y + 'px';
+                crack.style.width = width + 'px';
+                crack.style.height = height + 'px';
+                crack.style.transform = `rotate(${angle}deg)`;
+                crack.style.background = `rgba(255,0,0,${0.3 + Math.random() * 0.4})`;
+                crack.style.boxShadow = `0 0 ${10 + Math.random() * 20}px rgba(255,0,0,0.3)`;
+                crack.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                
+                container.appendChild(crack);
+            }
+        }
+
+        // ====== TEXTO DIGITANDO FINAL ======
+        function typeFinalText() {
+            const container = document.getElementById('typingText');
+            container.classList.add('active');
+            
+            const texts = [
+                "Você nunca esteve no controle...",
+                "Todos os seus dados agora me pertencem.",
+                "Sua identidade foi completamente comprometida.",
+                "Bem-vindo ao seu novo pesadelo digital."
+            ];
+            
+            let textIndex = 0;
+            let charIndex = 0;
+            let currentText = '';
+            
+            function typeChar() {
+                if (textIndex >= texts.length) {
+                    setTimeout(() => {
+                        container.innerHTML += '<br><span style="font-size: 16px; color: #ff3333;">💀 FIM 💀</span>';
+                    }, 2000);
+                    return;
+                }
+                
+                if (charIndex === 0) {
+                    currentText = texts[textIndex];
+                }
+                
+                if (charIndex < currentText.length) {
+                    container.innerHTML = currentText.substring(0, charIndex + 1) + '<span class="cursor">█</span>';
+                    charIndex++;
+                    setTimeout(typeChar, 100 + Math.random() * 50);
+                } else {
+                    charIndex = 0;
+                    textIndex++;
+                    setTimeout(() => {
+                        container.innerHTML = currentText + '<span class="cursor">█</span>';
+                        setTimeout(typeChar, 800);
+                    }, 1500);
+                }
+            }
+            
+            setTimeout(typeChar, 1000);
+        }
+
+        // ====== ÁUDIO DE FUNDO OPRESSIVO ======
+        function startBackgroundAudio() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                // Som de vento
+                const bufferSize = 4 * audioCtx.sampleRate;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    const t = i / audioCtx.sampleRate;
+                    data[i] = (Math.random() * 2 - 1) * 0.15 * Math.sin(t * 0.5) + 
+                              (Math.random() * 2 - 1) * 0.05;
+                }
+                
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.loop = true;
+                
+                const gain = audioCtx.createGain();
+                gain.gain.value = 0.15;
+                
+                // Filtro para suavizar
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 400;
+                
+                source.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                source.start();
+                
+                // Batidas cardíacas lentas
+                let beatInterval = setInterval(() => {
+                    if (document.getElementById('blackHatOverlay').classList.contains('active')) {
+                        try {
+                            const osc = audioCtx.createOscillator();
+                            const gainBeat = audioCtx.createGain();
+                            osc.connect(gainBeat);
+                            gainBeat.connect(audioCtx.destination);
+                            osc.frequency.value = 30 + Math.random() * 20;
+                            gainBeat.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                            gainBeat.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                            osc.start(audioCtx.currentTime);
+                            osc.stop(audioCtx.currentTime + 0.3);
+                        } catch (e) {}
+                    }
+                }, 1000);
+                
+                // Acelerar batidas conforme o tempo
+                setTimeout(() => {
+                    clearInterval(beatInterval);
+                    let fasterBeat = setInterval(() => {
+                        if (document.getElementById('blackHatOverlay').classList.contains('active')) {
+                            try {
+                                const osc = audioCtx.createOscillator();
+                                const gainBeat = audioCtx.createGain();
+                                osc.connect(gainBeat);
+                                gainBeat.connect(audioCtx.destination);
+                                osc.frequency.value = 40 + Math.random() * 30;
+                                gainBeat.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                                gainBeat.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                                osc.start(audioCtx.currentTime);
+                                osc.stop(audioCtx.currentTime + 0.2);
+                            } catch (e) {}
+                        }
+                    }, 600);
+                }, 10000);
+                
+                return source;
+            } catch (e) {
+                console.log('Áudio de fundo não disponível');
+                return null;
+            }
+        }
+
         // ====== AUDIO ======
         let audioCtx = null;
         let isCorrupted = false;
         let userName = "";
         let timerInterval;
+        let backgroundAudio = null;
 
         function playStatic(intensity = 0.08) {
             try {
@@ -835,7 +1169,6 @@
                 const now = audioCtx.currentTime;
                 const duration = 3.2 + Math.random() * 1.5;
 
-                // Camadas de riso distorcido
                 for (let i = 0; i < 3; i++) {
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
@@ -857,11 +1190,9 @@
                     osc.stop(now + duration);
                 }
 
-                // Distortion + reverb simulados
                 setTimeout(() => playStatic(0.35 * intensity), 400);
                 setTimeout(() => playStatic(0.25 * intensity), 1400);
                 
-                // Voz sintetizada sobreposta
                 setTimeout(() => {
                     speakThreat("Hahahaha... eu vejo você...", 0.7);
                 }, 500);
@@ -883,20 +1214,46 @@
             }
         }
 
+        // ====== DETECTAR LOCALIZAÇÃO APROXIMADA ======
+        function getApproximateLocation() {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const cityMap = {
+                'America/Sao_Paulo': 'São Paulo, BR',
+                'America/Rio_de_Janeiro': 'Rio de Janeiro, BR',
+                'America/Fortaleza': 'Fortaleza, BR',
+                'America/Recife': 'Recife, BR',
+                'America/Brasilia': 'Brasília, BR',
+                'America/Porto_Alegre': 'Porto Alegre, BR',
+                'America/Curitiba': 'Curitiba, BR',
+                'America/Manaus': 'Manaus, BR',
+                'America/Bahia': 'Salvador, BR',
+                'Europe/Lisbon': 'Lisboa, PT',
+                'America/New_York': 'Nova York, EUA',
+                'Europe/London': 'Londres, UK'
+            };
+            return cityMap[timezone] || 'Não determinada';
+        }
+
         // ====== AMEAÇA FINAL ======
         function showThreat() {
             const threatText = document.getElementById('threatText');
             const locationDisplay = document.getElementById('locationDisplay');
             
-            const cities = ['São Paulo, BR', 'Rio de Janeiro, BR', 'Brasília, BR', 'Belo Horizonte, BR', 
-                          'Porto Alegre, BR', 'Curitiba, BR', 'Salvador, BR', 'Fortaleza, BR'];
+            const realLocation = getApproximateLocation();
+            locationDisplay.textContent = realLocation;
             
-            locationDisplay.textContent = cities[Math.floor(Math.random() * cities.length)];
+            // Pop-ups falsos
+            const ips = ['189.45.67.89', '201.23.45.67', '187.89.10.11', '200.34.56.78'];
+            setTimeout(() => {
+                createFakePopup(`IP RASTREADO: ${ips[Math.floor(Math.random() * ips.length)]}`, '⚠️ RASTREAMENTO ATIVO');
+                createFakePopup('ARQUIVOS SENDO ENVIADOS...', '📤 TRANSFERÊNCIA DADOS', window.innerWidth - 320, 50);
+            }, 1000);
             
             setTimeout(() => {
                 threatText.innerHTML = '⚠️ <span class="highlight">VOCÊ FOI RASTREADO</span> ⚠️';
                 playAlarm();
                 speakThreat("Você foi rastreado.", 0.8);
+                createFakePopup(`LOCALIZAÇÃO DETECTADA: ${realLocation}`, '📍 GEOLOCALIZAÇÃO');
             }, 500);
             
             setTimeout(() => {
@@ -909,6 +1266,7 @@
                 threatText.innerHTML = '🔴 <span class="highlight">VOCÊ ESTÁ SENDO MONITORADO</span> 🔴';
                 playAlarm();
                 speakThreat("Você está sendo monitorado.", 0.65);
+                createFakePopup('ACESSO À CÂMERA ATIVADO', '📷 PERMISSÃO CONCEDIDA');
             }, 3500);
             
             setTimeout(() => {
@@ -921,12 +1279,14 @@
                 threatText.innerHTML = '⚠️ <span class="highlight">SUA IDENTIDADE FOI COMPROMETIDA</span> ⚠️';
                 playAlarm();
                 speakThreat("Sua identidade foi comprometida.", 0.7);
+                createFakePopup(`ACESSO AO SISTEMA: ${userName.toUpperCase()}`, '👤 IDENTIDADE ROUBADA');
             }, 7000);
             
             setTimeout(() => {
                 threatText.innerHTML = '☠️ <span class="highlight">VOCÊ PERTENCE AO SISTEMA</span> ☠️';
                 playSinisterLaugh(1.8);
                 speakThreat("Você pertence ao sistema.", 0.6);
+                typeFinalText();
             }, 9000);
             
             const laughInterval = setInterval(() => {
@@ -951,11 +1311,22 @@
             container.classList.add('active');
             overlay.classList.add('active');
             
-            // Efeito matrix verde adicional
             document.getElementById('matrixCanvas').style.opacity = '0.15';
             
-            // Chuva de binário verde
             startGreenBinaryRain();
+            createCracks();
+            
+            // Ativar webcam
+            activateWebcam();
+            
+            // Pop-ups durante desfragmentação
+            setTimeout(() => {
+                createFakePopup('DESFRAGMENTAÇÃO BINÁRIA INICIADA', '⚡ PROCESSO ATIVO', 50, 200);
+            }, 300);
+            
+            setTimeout(() => {
+                createFakePopup('ARQUIVOS SENDO RECONSTRUÍDOS...', '🔄 CORRUPÇÃO REVERSÍVEL?', window.innerWidth - 350, 300);
+            }, 800);
             
             const numPieces = 120;
             const width = window.innerWidth;
@@ -984,7 +1355,6 @@
                 piece.style.opacity = Math.random() * 0.7 + 0.3;
                 piece.style.border = '1px solid rgba(0, 255, 65, 0.3)';
                 
-                // Binário dentro dos fragmentos
                 const binaryText = Math.random() > 0.5 ? '10110' : '01101';
                 piece.innerHTML = `<span style="font-size:${10 + Math.random() * 6}px; color:#000; font-family:monospace; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.8;">${binaryText}</span>`;
                 
@@ -1060,7 +1430,6 @@
             
             drawGreenRain();
             
-            // Remover após 10 segundos se não tiver ativado
             setTimeout(() => {
                 const canvas = document.getElementById('greenRainCanvas');
                 if (canvas && !document.getElementById('blackHatOverlay').classList.contains('active')) {
@@ -1074,9 +1443,15 @@
             const iaOverlay = document.getElementById('iaOverlay');
             iaOverlay.classList.add('fade-out');
             
-            // Tocar som de transição
             playStatic(0.1);
             speakThreat("Ótimo... agora eu te conheço...", 0.7);
+            
+            // Iniciar áudio de fundo
+            setTimeout(() => {
+                if (audioCtx) {
+                    backgroundAudio = startBackgroundAudio();
+                }
+            }, 500);
             
             setTimeout(() => {
                 iaOverlay.style.display = 'none';
@@ -1239,6 +1614,7 @@
                 playAlarm();
                 playSinisterLaugh(1.5);
                 speakThreat("Não adianta tentar...", 0.6);
+                createFakePopup('TENTATIVA DE DEBUG DETECTADA', '🛡️ SEGURANÇA BLOQUEADA');
             }
         });
 
